@@ -1,5 +1,5 @@
 // global variables
-var path = '';
+//var path = '';
 
 $(document).ready(function() {
   $.ajax({
@@ -7,7 +7,6 @@ $(document).ready(function() {
     url: "http://localhost:8000/api/data",
     success: function(data) {
       console.log(data);
-      test();
       //draw_main_page(data[0]);
     },
     error: function(error) {
@@ -23,7 +22,7 @@ function draw_main_page(parent_process){
   var stage_list = child_process.stage_list;
   
   // create page element
-  var main_page_element = $('<div>')
+  var main_page_element = $('<div>');
   main_page_element.attr({
     'class' : 'page',
     'id' : 'main_page',
@@ -31,8 +30,8 @@ function draw_main_page(parent_process){
     'position' : 'relative',
     'width' : '800px',
     'height' : '500px',
-  })
-  $('body').append(main_page_element)
+  });
+  $('body').append(main_page_element);
 
   //draw stages
   for (var i = 0; i < stage_list.length; i++){
@@ -81,8 +80,8 @@ function draw_subsheet(subsheet_id, stage_list){
     'position' : 'relative',
     'width' : '800px',
     'height' : '500px',
-  })
-  $('body').append(page_element)
+  });
+  $('body').append(page_element);
 
   // draw stages
   for (var i = 0; i < stage_list.length; i++){
@@ -203,19 +202,3 @@ function clean_page(){
   console.log('clean_page');
   $('.page').remove();
 };
-
-function test(){
-  var div = $('<div>');
-  div.attr({
-
-  }).css({
-    'margin' : '50px',
-    'background-color' : 'lightgreen',
-    'width' : '100px',
-    'height' : '100px',
-    'border-radius' : '25%',
-    'text-align' : 'center',
-  });
-  div.append('Start')
-  $('body').append(div)
-}
