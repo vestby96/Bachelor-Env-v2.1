@@ -1,10 +1,9 @@
 import mysql.connector
-import xml.etree.ElementTree as ET
 
-def db_init(name, content):
+def init_db_filt():
     # mysql connection
     mydb = mysql.connector.connect(
-        host="mysqldb",
+        host="mysqldb-filt",
         user="root",
         password="Password-123"
     )
@@ -17,7 +16,7 @@ def db_init(name, content):
     
     # database connection
     mydb = mysql.connector.connect(
-        host="mysqldb",
+        host="mysqldb-filt",
         user="root",
         password="Password-123",
         database="files"
@@ -27,19 +26,8 @@ def db_init(name, content):
     cursor = mydb.cursor()
     cursor.execute("DROP TABLE IF EXISTS xml")
     cursor.execute("CREATE TABLE xml (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL)")
-    sql = "INSERT INTO xml (name, content) VALUES (%s, %s)"
-    args = (name, content)
-    cursor.execute(sql, args)
-    mydb.commit()
-    
-    print(cursor.rowcount, "was inserted.")
     cursor.close()
-
-    return f"{cursor.rowcount}, was inserted."
-
-# reading the xml file and commiting it to the database
-f = open("/code/Test-Process-Release2815.xml", "r")
-xml_string = f.read()
-db_init('test_process', xml_string)
-
-
+    
+    print('db-filt initalized')
+    
+init_db_filt()

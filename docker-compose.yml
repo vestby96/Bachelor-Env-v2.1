@@ -7,16 +7,27 @@ services:
     volumes:
       - ./Backend:/code
   
-  mysqldb:
+  mysqldb-sens:
     image: mysql
-    container_name: mysqldb-server
+    container_name: mysqldb-sens-server
     ports:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=Password-123
     volumes:
-      - mysql:/var/lib/mysql
-      - mysql_config:/etc/mysql
+      - mysql-sens:/var/lib/mysql
+      - mysql-sens_config:/etc/mysql
+
+  mysqldb-filt:
+    image: mysql
+    container_name: mysqldb-filt-server
+    ports:
+      - 3307:3307
+    environment:
+      - MYSQL_ROOT_PASSWORD=Password-123
+    volumes:
+      - mysql-filt:/var/lib/mysql
+      - mysql-filt_config:/etc/mysql
 
   frontend:
     image: nginx:latest
@@ -27,5 +38,7 @@ services:
       - ./Frontend:/usr/share/nginx/html
 
 volumes:
-  mysql:
-  mysql_config:
+  mysql-sens:
+  mysql-sens_config:
+  mysql-filt:
+  mysql-filt_config:
