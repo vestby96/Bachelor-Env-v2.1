@@ -7,11 +7,16 @@
         <link rel="stylesheet" href="./css/style.css">
     </head>
     <body>
-        <ul class="nav">
-            <li class="nav-item">Logo</li>
-            <li class="nav-item"><input class="find_process" type="text"><button onclick="get_process()">Search</button></li>
-            <li class="nav-item">Navn eller tittel</li>
-        </ul>
-        <header class="path_header"></header>
+        <section class="search">
+            <input type="text" placeholder="Enter customer name" id="searchCustomerInput">
+            <button class="searchCustomerButton" onclick="get_all_processes_for_customer()">Find Processes</button>
+            <div id="searchCustomerResponse" class="response"></div>
+        </section>
+        <ul id="processList" class="response"></ul>
+
+        <section class="display">
+            <div class="path"></div>
+            <div class="page"></div>
+        </section>
     </body>
 </html>

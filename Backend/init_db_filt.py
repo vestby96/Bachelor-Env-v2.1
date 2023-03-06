@@ -10,8 +10,8 @@ def init_db_filt():
     
     # rebuild the database
     cursor = mydb.cursor()
-    cursor.execute("DROP DATABASE IF EXISTS files")
-    cursor.execute("CREATE DATABASE files")
+    cursor.execute("DROP DATABASE IF EXISTS customer")
+    cursor.execute("CREATE DATABASE customer")
     cursor.close()
     
     # database connection
@@ -19,7 +19,7 @@ def init_db_filt():
         host="mysqldb-filt",
         user="root",
         password="Password-123",
-        database="files"
+        database="customer"
     )
     
     # rebuild the table and instert the test process

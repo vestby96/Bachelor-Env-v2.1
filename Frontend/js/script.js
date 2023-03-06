@@ -1,55 +1,99 @@
 // global variables
 var global_path = [{'id': '0', 'name' : 'Main Page'}];
-var global_data = [];
+var global_data, selected_process = [];
 
-function get_process(){
-  // get the search value
-  var search_val = $('.find_process').val();
+function get_all_processes_for_customer(){
+  // getting the customer search value
+  var customer_name = $('#searchCustomerInput').val();
+  // removing the path, process list and stages
+  clean_path();
+  $('#processList li').remove();
+  $('#searchCustomerResponse p').remove();
+  clean_page();
   // api
   $.ajax({
     type: "GET",
     // get the process by process name
-    url: "http://localhost:8000/api/data/" + search_val + "/",
+    url: "http://localhost:8000/" + customer_name + "/",
     success: function(data) {
       try {
-        // storing the data from the api globally
-        global_data = data;
-        console.log(global_data);
-        // the main page will allways be the starting point
-        draw_main_page(global_data[0]);
-        // hover function
-        hover_effect();
+        // checking if the api response is a process list or error
+        if (data.length == undefined){
+          alert('No customer found');
+        } else {
+          // storing the data from the api globaly
+          // the global_data is now a list of lists, where each sub-list is a xml-parent-process
+          global_data = data;
+          console.log(global_data);
+          // creating a button for each processes to the customer
+          var p_element = $('<p>');
+          p_element.append(global_data.length + ' processes found');
+          $('#searchCustomerResponse').append(p_element);
+          // loop through each item in the api response
+          for (var i = 0; i < global_data.length; i++){
+            // create a list item with an anchor for each process the customer has access to
+            var li_element = $('<li>');
+            var button_element = $('<button>');
+            button_element.attr({
+                'onclick' : 'select_process(' + i + ');reset_path();draw_main_page()',
+            });
+            button_element.append(global_data[i][0].name);
+            li_element.append(button_element);
+            $('#processList').append(li_element);
+          };
+          // hover function
+          hover_effect();
+        };
       } catch {
-        alert('No Process Found')
-      }
+        alert('No customer found');
+      };
     },
     error: function(error) {
+      alert(error);
       console.log(error);
     }
   });
 };
 
-function draw_arrows(){
-  $('.canvas').remove();
-  
-  var canvas_element = $('<canvas>');
-  canvas_element.attr({
+function select_process(index){
+  try {
+    selected_process = global_data[parseInt(index)];
+  } catch {
+    console.log('error in select_process function');
+  };
+};
 
-  }).css({
+function search_function(){
+  // get the input
+  // find matching results
+  // create anchors for each result
+  // remove anchors and reset input when an achor is clicked
+  var filter = $("#searchInput").val().toUpperCase();
+  var div = $("#myDropdown");
+  var a = div.find("a");
+  for (i = 0; i < a.length; i++) {
+    var txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    };
+  };
+};
 
-  });
-
-  var stage_element_list = $('.stage').get();
-  for (var i = 0; i < stage_element_list.length; i++){
-    var stage_element_from = stage_element_list[i];
-    if (stage_element_from.attr('onsuccess')){
-      for (var j = 0; j < stage_element_list.length; j++){
-        var stage_element_to = stage_element_list[j];
-        if (stage_element_from.attr('onsuccess') == stage_element_to.attr('id')){
-
-        }
-      };
-    }
+function filter_function() {
+  var input, filter, ul, li, a, i;
+  input = $("#searchInput");
+  filter = input.val().toUpperCase();
+  div = $("#myDropdown");
+  a = div.find("a");
+  for (i = 0; i < a.length; i++) {
+    txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    };
   };
 };
 
@@ -80,9 +124,42 @@ function hover_effect(){
   });
 };
 
+function reset_path(){
+  // reset the path
+  global_path = [{'id': '0', 'name' : 'Main Page'}];
+  draw_path();
+};
+
+function clean_page(){
+  console.log('clean_page');
+  $('.page').empty();
+};
+
+function clean_path(){
+  global_path = [{'id': '0', 'name' : 'Main Page'}];
+  $('.path_ul').remove();
+};
+
+function edit_path(page_id, name, index){
+  // updating the list
+  if (index == undefined){
+    // adding new list-item
+    var path_page = {
+      'id' : page_id,
+      'name' : name,
+    };
+    global_path.push(path_page);
+  } else {
+    // removing all list items after index
+    global_path.length = parseInt(index + 1);
+  };
+  draw_path();
+};
+
+//--------------- List path and draw arrows ---------------
 function draw_path(){
   // updating the path-element
-  var header_element = $('.path_header');
+  var header_element = $('.path');
   $('.path_ul').remove();
   var ul_element = $('<ul>');
   ul_element.attr({
@@ -92,7 +169,7 @@ function draw_path(){
     var li_element = $('<li>');
     var btn_element = $('<button>');
     btn_element.attr({
-      'class' : 'path_button',
+      'class' : 'pathButton',
     }).css({
 
     });
@@ -115,22 +192,31 @@ function draw_path(){
   header_element.append(ul_element);
 };
 
-function edit_path(page_id, name, index){
-  // updating the list
-  if (index == undefined){
-    // adding new list-item
-    var path_page = {
-      'id' : page_id,
-      'name' : name,
-    };
-    global_path.push(path_page);
-  } else {
-    // removing all list items after index
-    global_path.length = parseInt(index + 1);
+function draw_arrows(){
+  $('.canvas').remove();
+  
+  var canvas_element = $('<canvas>');
+  canvas_element.attr({
+
+  }).css({
+
+  });
+
+  var stage_element_list = $('.stage').get();
+  for (var i = 0; i < stage_element_list.length; i++){
+    var stage_element_from = stage_element_list[i];
+    if (stage_element_from.attr('onsuccess')){
+      for (var j = 0; j < stage_element_list.length; j++){
+        var stage_element_to = stage_element_list[j];
+        if (stage_element_from.attr('onsuccess') == stage_element_to.attr('id')){
+
+        }
+      };
+    }
   };
-  draw_path();
 };
 
+//---------------------- Draw Pages -----------------------
 function draw_main_page(){
   // draw the initial path
   draw_path();
@@ -138,20 +224,8 @@ function draw_main_page(){
   console.log('draw_main_page');
 
   // variables
-  var child_process = global_data[0].child_process;
+  var child_process = selected_process[0].child_process;
   var stage_list = child_process.stage_list;
-  
-  // create page element
-  var main_page_element = $('<div>');
-  main_page_element.attr({
-    'class' : 'page',
-    'id' : 'main_page',
-  }).css({
-    'position' : 'relative',
-    'width' : '800px',
-    'height' : '500px',
-  });
-  $('body').append(main_page_element);
 
   //draw stages
   for (var i = 0; i < stage_list.length; i++){
@@ -192,9 +266,9 @@ function draw_main_page(){
 function draw_subsheet(subsheet_id){
   // find the subsheet name and draw the path
   var name = 'Undefined';
-  for (var i = 0; i < global_data[0].child_process.subsheet_list.length; i++){
-    if (subsheet_id == global_data[0].child_process.subsheet_list[i].id){
-      name = global_data[0].child_process.subsheet_list[i].name;
+  for (var i = 0; i < selected_process[0].child_process.subsheet_list.length; i++){
+    if (subsheet_id == selected_process[0].child_process.subsheet_list[i].id){
+      name = selected_process[0].child_process.subsheet_list[i].name;
     };
   };
   edit_path(subsheet_id, name,);
@@ -202,19 +276,9 @@ function draw_subsheet(subsheet_id){
   // remove previous page and create new blank page
   clean_page();
   console.log('draw_subsheet');
-  var page_element = $('<div>')
-  page_element.attr({
-    'class' : 'page',
-    'id' : subsheet_id,
-  }).css({
-    'position' : 'relative',
-    'width' : '800px',
-    'height' : '500px',
-  });
-  $('body').append(page_element);
 
   // global stage list
-  var stage_list = global_data[0].child_process.stage_list;
+  var stage_list = selected_process[0].child_process.stage_list;
 
   // draw stages
   for (var i = 0; i < stage_list.length; i++){
@@ -252,6 +316,7 @@ function draw_subsheet(subsheet_id){
   hover_effect();
 };
 
+//---------------------- Draw Stages ----------------------
 function draw_default_stage(stage){
   var btn = $('<button>');
   btn.attr({
@@ -518,9 +583,4 @@ function draw_collection(stage){
 
 function draw_stage_page(stage){
   draw_default_stage(stage);
-};
-
-function clean_page(){
-  console.log('clean_page');
-  $('.page').remove();
 };
