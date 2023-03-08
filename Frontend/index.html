@@ -2,21 +2,28 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="./js/script.js"></script>
-        <link rel="stylesheet" href="./css/style.css">
+        <script rel="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script rel="text/javascript" src="./js/script.js"></script>
+        <link rel="stylesheet" href="./css/styleIndex.css">
+        <title>Visualizer</title>
     </head>
     <body>
-        <section class="search">
-            <input type="text" placeholder="Enter customer name" id="searchCustomerInput">
-            <button class="searchCustomerButton" onclick="get_all_processes_for_customer()">Find Processes</button>
-            <div id="searchCustomerResponse" class="response"></div>
-        </section>
-        <ul id="processList" class="response"></ul>
+        <!----------------------- Header with dropdown and customer name ----------------------------->
+        <header class="info" id="processInfo">
+            <div class="dropdown">
+                <button class="dropbtn">Processes</button>
+                <div class="dropdown-content"></div>
+            </div>
+            <div class="info" id="customer"><h2></h2></div>
+        </header>
 
-        <section class="display">
-            <div class="path"></div>
-            <div class="page"></div>
+        <!---------------------------------------- Path ---------------------------------------------->
+        <div class="path" id="processPath"></div>
+
+        <!------------------------------- Display of the process ------------------------------------->
+        <section class="displaySection" id="displaySectionProcess">
+            <svg id="svg"></svg>
+            <div class="displayCenter" id="displayCenterProcess"></div>
         </section>
     </body>
 </html>

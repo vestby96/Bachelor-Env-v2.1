@@ -31,7 +31,7 @@ def init_db_sens():
     
     print('db-sens initalized')
 
-def insert_to_db_sens(name, content):
+def insert_to_db_sens(name: str, content: str):
     
     # database connection
     mydb = mysql.connector.connect(
@@ -44,6 +44,7 @@ def insert_to_db_sens(name, content):
     # instert the values
     cursor = mydb.cursor()
     sql = "INSERT INTO xml (name, content) VALUES (%s, %s)"
+    name = name.lower()
     args = (name, content)
     cursor.execute(sql, args)
     mydb.commit()
@@ -57,10 +58,10 @@ def insert_to_db_sens(name, content):
 init_db_sens()
 
 # reading the xml files and commiting it to the database
-f = open("/code/Test-Process-Release2815.xml", "r")
+f = open("/code/init_db/Test-Process-Release2815.xml", "r")
 xml_string = f.read()
-insert_to_db_sens('test_process', xml_string)
+insert_to_db_sens('test process', xml_string)
 
-f = open("/code/test.xml", "r")
+f = open("/code/init_db/test.xml", "r")
 xml_string = f.read()
-insert_to_db_sens('test_process_2', xml_string)
+insert_to_db_sens('test process 2', xml_string)

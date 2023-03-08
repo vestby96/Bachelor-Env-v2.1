@@ -24,7 +24,7 @@ def pull_from_db_sens():
         print('     ' + fetched[1])
     return xml_list
 
-def analyze_and_filter(xml_string):
+def analyze_and_filter(xml_string: str):
     # parse xml file
     root = ET.fromstring(xml_string)
         
@@ -162,7 +162,7 @@ def reset_db_filt():
     cursor.close()
     print('DB filt is reset')
 
-def push_to_db_filt(name, content):
+def push_to_db_filt(name: str, content: str):
     # connect to filtered db files
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
@@ -173,6 +173,7 @@ def push_to_db_filt(name, content):
     cursor = mydb.cursor()
     # sql string with arguments
     sql = "INSERT INTO xml (name, content) VALUES (%s, %s)"
+    name = name.lower()
     args = (name, content)
     cursor.execute(sql, args)
     # commit the commands

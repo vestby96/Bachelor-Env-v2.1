@@ -28,47 +28,71 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# returns a list of processes to the given customer
-def get_list_from_db_customer(customer_name: str):
-    # mysql connection
-    mydb = mysql.connector.connect(
-        host="mysqldb-filt",
-        user="root",
-        password="Password-123",
-        database=customer_name
-    )
-    cursor = mydb.cursor()
-    # selecting all content from the xml table
-    cursor.execute(f"SELECT content FROM xml")
-    # storing the result from db in variable
-    xml_list = cursor.fetchall()
-    cursor.close()
-    # returning the variable
-    return xml_list
-
 # api for getting all processes for given customer
 @app.get('/{customer_name}/')
-def return_customer(customer_name: str):
+def return_process_names(customer_name: str):
     try:
-        json_list = get_list_from_db_customer(customer_name)
-        process_list = []
-        for item in json_list:
-            # converting each item in 
-            process_list.append(json.loads(item[0]))
-        return JSONResponse(process_list)
+        name_list = get_data_from_db(customer_name)
+        return JSONResponse(name_list)
     except:
-        return JSONResponse({'error' : 'No customer found'})
+        return JSONResponse({'Error' : 'return_process_names() failed'})
 
-@app.get('/{customer_name}/{process_name}/')
-def return_customer_process(customer_name, process_name):
+@app.get('/{customer_name}/{process_name}')
+def return_process(customer_name: str, process_name: str):
     try:
-        json_list = get_list_from_db_customer(customer_name)
-        return_process = []
-        for item in json_list:
-            process = json.loads(item[0])
-            if process[0]['name'] == process_name:
-                return_process = process
-                return JSONResponse(return_process)
-        return JSONResponse({'error' : 'No process found'})
+        content = get_data_from_db(customer_name, process_name)
+        return JSONResponse(content)
     except:
-        return JSONResponse({'error' : 'No customer found'})
+        return JSONResponse({'Error' : 'return_process() failed'})
+
+
+def get_data_from_db(customer_name: str, process_name: str = ''):
+    # if the client is looking for processes connected to customer
+    if process_name == '':
+        try:
+            process_name_list = []
+            # mysql connection
+            mydb = mysql.connector.connect(
+                host="mysqldb-filt",
+                user="root",
+                password="Password-123",
+                database=customer_name
+            )
+            cursor = mydb.cursor()
+            # selecting all content from the xml table
+            cursor.execute(f'SELECT name FROM xml')
+            # storing the result from db in variable
+            db_list = cursor.fetchall()
+            cursor.close()
+            for item in db_list:
+                process_name_list.append(item[0])
+            # returning the variable
+            return process_name_list
+        except:
+            # customer name error
+            return {'Error' : 'No customer found'}
+        
+    # else the client is looking for a specific process
+    else:
+        try:
+            process_list = []
+            # mysql connection
+            mydb = mysql.connector.connect(
+                host="mysqldb-filt",
+                user="root",
+                password="Password-123",
+                database=customer_name
+            )
+            cursor = mydb.cursor()
+            # selecting all content from the xml table
+            cursor.execute(f'SELECT content FROM xml WHERE name = "{process_name}"')
+            # storing the result from db in variable
+            content = cursor.fetchone()
+            cursor.close()
+            # parsing the response
+            content = json.loads(content[0])
+            # returning the process list
+            return content
+        except:
+            # process name error
+            return {'Error' : 'No process found'}
