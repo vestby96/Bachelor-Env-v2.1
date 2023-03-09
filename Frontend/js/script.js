@@ -1,7 +1,7 @@
 // global variables
 var ip_addr, port, global_path, customer_name, process_name_list, selected_process;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
-ip_addr = '192.168.0.40';
+ip_addr = '192.168.0.32';
 port = '8000';
 
 $(document).ready(function(){
@@ -9,11 +9,30 @@ $(document).ready(function(){
   get_process_names();
   customer_str = capitalize_str(customer_name);
   $('#customer h2').append(customer_str);
+  center = get_center($('.dropdown'));
+  console.log(center.x + ' : ' + center.y);
 });
 
+function get_center(element){
+  var offset, width, heigth, center_x, center_y, center;
+  offset = element.offset();
+  width = element.width();
+  heigth = element.height();
+
+  center_x = offset.left + width / 2;
+  center_y = offset.top + heigth / 2;
+
+  center = {'x' : center_x, 'y' : center_y};
+  return center;
+};
+
 function draw_line(x1, y1, x2, y2){
-  var svg  = document.getElementById('svg');
-  var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  // variables
+  var svg, line;
+
+  svg  = document.getElementById('svg');
+  line = document.createElementNS('http://www.w3.org/2000/svg','line');
+
   line.setAttribute('x1', x1);
   line.setAttribute('y1', y1);
   line.setAttribute('x2', x2);
@@ -25,11 +44,11 @@ function draw_line(x1, y1, x2, y2){
 }
 
 function draw_all_lines(){
+  // remove all previous svg lines
+  $('#svg').empty();
+
   // variables
   var to_stage_element, from_stage_element, elements, i, j, center_x, center_y, x1, y1, x2, y2;
-
-  // remove all previous svg lines
-  $('svg').empty();
 
   // get the size of section element
   center_x = $('#displaySectionProcess').outerWidth() / 2;
@@ -41,11 +60,11 @@ function draw_all_lines(){
   for (i = 0; i < elements.length; i++){
     // checking if the stage has an onsuccess id
     from_stage_element = $(elements[i]);
-    if (from_stage_element.attr('onsuccess')){
+    if (from_stage_element.attr('onsuccess') || from_stage_element.attr('ontrue') || from_stage_element.attr('onfalse')){
       for (j = 0; j < elements.length; j++){
         // finding the onsuccess stage
         to_stage_element = $(elements[j]);
-        if (from_stage_element.attr('onsuccess') == to_stage_element.attr('id')){
+        if (from_stage_element.attr('onsuccess') == to_stage_element.attr('id') || from_stage_element.attr('ontrue') == to_stage_element.attr('id') || from_stage_element.attr('onfalse') == to_stage_element.attr('id')){
           // getting the positions of the stages
           x1 = from_stage_element.position().left + from_stage_element.outerWidth()/2 + center_x;
           y1 = from_stage_element.position().top + from_stage_element.outerHeight()/2 + center_y;
@@ -461,6 +480,8 @@ function draw_decision(stage){
     'class' : 'stage',
     'id' : stage.id,
     'onsuccess' : stage.onsuccess,
+    'ontrue' : stage.ontrue,
+    'onfalse' : stage.onfalse,
     'type' : 'button',
     'stage_type' : stage.type,
   }).css({
@@ -474,10 +495,10 @@ function draw_decision(stage){
     'top' : parseInt(stage.y) + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : 'none',
-    'background-color' : 'white',
+    'background-color' : 'transparent',
     'background-image' : 'url("./img/decision.png")',
     'background-repeat' : 'no-repeat',
-    'background-size' : '100% 90%',
+    'background-size' : '100% 95%',
     'background-position' : 'center',
     'cursor' : 'pointer',
     'z-index' : 1,

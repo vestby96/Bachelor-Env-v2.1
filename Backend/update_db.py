@@ -116,11 +116,23 @@ def analyze_and_filter(xml_string: str):
                     subsheet_id = str(subsheet_id_element.text)
                     stage_dict['subsheet_id'] = subsheet_id
                     
-                # subsheet id
+                # process id
                 process_id_element = stage.find('proc:processid', ns)
                 if process_id_element is not None:
                     process_id = str(process_id_element.text)
                     stage_dict['process_id'] = process_id
+                
+                # ontrue id
+                ontrue_element = stage.find('proc:ontrue', ns)
+                if ontrue_element is not None:
+                    ontrue = str(ontrue_element.text)
+                    stage_dict['ontrue'] = ontrue
+                
+                # onfalse id
+                onfalse_element = stage.find('proc:onfalse', ns)
+                if onfalse_element is not None:
+                    onfalse = str(onfalse_element.text)
+                    stage_dict['onfalse'] = onfalse
                         
                 process_dict['stage_list'].append(stage_dict)
                 
