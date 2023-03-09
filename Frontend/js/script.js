@@ -1,28 +1,56 @@
 // global variables
-var ip_addr, port, global_path, customer_name, process_name_list, selected_process;
+var ip, port, global_path, customer_name, process_name_list, selected_process;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
-ip_addr = '192.168.0.32';
+ip = '192.168.0.32';
 port = '8000';
+customer_name = 'customer';
 
 $(document).ready(function(){
-  customer_name = 'customer';
   get_process_names();
   customer_str = capitalize_str(customer_name);
   $('#customer h2').append(customer_str);
-  center = get_center($('.dropdown'));
-  console.log(center.x + ' : ' + center.y);
+  window.onresize = function(){
+    console.log('resize').delay(800);
+  };
 });
 
+function get_size(id = ''){
+  var subsheet, stage_list, stage, i, x, y, max_x, max_y, min_x, min_y, dimensions;
+  max_x = max_y = min_x = min_y = 0;
+
+  if (id == '' || !id){
+    // get size of main_page
+    stage_list = selected_process.child_process.stage_list;
+    for (i = 0; i < stage_list.length; i++){
+      stage = stage_list[i];
+      if (stage.subsheet_id == '0' || !stage.subsheet_id || stage.subsheet_id == ''){
+        x = parseInt(stage.x);
+        y = parseInt(stage.y);
+        if (x > max_x){
+          max_x = x;
+        } else if (x < min_x){
+          min_x = x;
+        };
+        if (y > max_y){
+          max_y = y;
+        } else if (y < min_y){
+          min_y = y;
+        };
+      };
+    };
+  } else {
+    // get size of subsheet
+  };
+  dimensions = {'x' : Math.abs(max_x) + Math.abs(min_x), 'y' : Math.abs(max_y) + Math.abs(min_y)};
+  return dimensions;
+};
+
 function get_center(element){
-  var offset, width, heigth, center_x, center_y, center;
-  offset = element.offset();
-  width = element.width();
-  heigth = element.height();
+  var width, heigth, center;
+  width = element.outerWidth();
+  heigth = element.outerHeight();
 
-  center_x = offset.left + width / 2;
-  center_y = offset.top + heigth / 2;
-
-  center = {'x' : center_x, 'y' : center_y};
+  center = {'x' : width / 2, 'y' : heigth / 2};
   return center;
 };
 
@@ -41,7 +69,7 @@ function draw_line(x1, y1, x2, y2){
   length = Math.sqrt( (x2-=x1)*x2 + (y2-=y1)*y2 );
   line.setAttribute('length', length);
   svg.appendChild(line);
-}
+};
 
 function draw_all_lines(){
   // remove all previous svg lines
@@ -66,10 +94,10 @@ function draw_all_lines(){
         to_stage_element = $(elements[j]);
         if (from_stage_element.attr('onsuccess') == to_stage_element.attr('id') || from_stage_element.attr('ontrue') == to_stage_element.attr('id') || from_stage_element.attr('onfalse') == to_stage_element.attr('id')){
           // getting the positions of the stages
-          x1 = from_stage_element.position().left + from_stage_element.outerWidth()/2 + center_x;
-          y1 = from_stage_element.position().top + from_stage_element.outerHeight()/2 + center_y;
-          x2 = to_stage_element.position().left + to_stage_element.outerWidth()/2 + center_x;
-          y2 = to_stage_element.position().top + to_stage_element.outerHeight()/2 + center_y;
+          x1 = from_stage_element.position().left + from_stage_element.outerWidth()/2;
+          y1 = from_stage_element.position().top + from_stage_element.outerHeight()/2;
+          x2 = to_stage_element.position().left + to_stage_element.outerWidth()/2;
+          y2 = to_stage_element.position().top + to_stage_element.outerHeight()/2;
           // drawing the line
           draw_line(x1, y1, x2, y2);
         };
@@ -90,7 +118,7 @@ function get_process_names(){
     // api call to get the process names
     $.ajax({
       type: 'GET',
-      url: 'http://' + ip_addr + ':' + port + '/' + customer_name + '/',
+      url: 'http://' + ip + ':' + port + '/' + customer_name + '/',
       success:function(data){
         // checking if the api response is an error
         if (data.length) {
@@ -125,7 +153,7 @@ function get_process(process_name){
     // api call to get the process content
     $.ajax({
       type: 'GET',
-      url: 'http://' + ip_addr + ':' + port + '/' + customer_name + '/' + process_name + '/',
+      url: 'http://' + ip + ':' + port + '/' + customer_name + '/' + process_name + '/',
       success:function(data){
         // if the data type is an object it is an error
         if (data.length){
@@ -233,9 +261,28 @@ function draw_path(){
 //---------------------- Draw Pages -----------------------
 function draw_main_page(){
   // variables
-  var child_process, stage_list, stage, i;
+  var child_process, stage_list, stage, i, dimensions, display, svg;
   child_process = selected_process.child_process;
   stage_list = child_process.stage_list;
+  
+  dimensions = get_size();
+
+  display = $('#displayCenterProcess');
+  display.css({
+    'width' : dimensions.x + 300 + 'px',
+    'height' : dimensions.y + 100 + 'px',
+  });
+
+  svg = $('#svg');
+  svg.css({
+    'width' : dimensions.x + 300 + 'px',
+    'height' : dimensions.y + 100 + 'px',
+  });
+
+  var test;
+  test = get_center(display);
+  console.log(dimensions.x + ':' + dimensions.y)
+  console.log(test.x + ':' + test.y)
 
   // draw the initial path
   reset_path();
@@ -340,7 +387,9 @@ function draw_subsheet(subsheet_id){
 
 //---------------------- Draw Stages ----------------------
 function draw_default_stage(stage){
-  var btn = $('<button>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<button>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -354,8 +403,8 @@ function draw_default_stage(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : '1px solid black',
     'background-color' : 'white',
@@ -369,7 +418,9 @@ function draw_default_stage(stage){
 };
 
 function draw_start_end(stage){
-  var btn = $('<button>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<button>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -383,8 +434,8 @@ function draw_start_end(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : '1px solid black',
     'background-color' : 'white',
@@ -411,7 +462,9 @@ function draw_anchor(stage){
 };
 
 function draw_stage_subsheet(stage){
-  var btn = $('<button>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<button>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -426,8 +479,8 @@ function draw_stage_subsheet(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : '1px solid black',
     'background-color' : 'white',
@@ -445,7 +498,9 @@ function draw_stage_subsheet_info(stage){
 };
 
 function draw_stage_process_info(stage){
-  var btn = $('<div>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<div>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -456,8 +511,8 @@ function draw_stage_process_info(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : '1px solid black',
     'background-color' : 'white',
@@ -475,7 +530,9 @@ function draw_stage_process(stage){
 };
 
 function draw_decision(stage){
-  var btn = $('<button>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<button>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -491,8 +548,8 @@ function draw_decision(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : 'none',
     'background-color' : 'transparent',
@@ -549,7 +606,9 @@ function draw_multiple_calculation(stage){
 };
 
 function draw_block(stage){
-  var btn = $('<div>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<div>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -560,8 +619,8 @@ function draw_block(stage){
     'width' : parseInt(stage.w),
     'height' : parseInt(stage.h),
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + parseInt(stage.w)/2 + 'px',
-    'top' : parseInt(stage.y) + parseInt(stage.h)/2 + 'px',
+    'left' : parseInt(stage.x) + parseInt(stage.w)/2 + center.x + 'px',
+    'top' : parseInt(stage.y) + parseInt(stage.h)/2 + center.y + 'px',
     'transform' : 'translate(-50%, -50%)',
     'border' : '1px solid black',
     'background-color' : 'lightblue',
@@ -575,7 +634,9 @@ function draw_block(stage){
 };
 
 function draw_collection(stage){
-  var btn = $('<button>');
+  var btn, center;
+  center = get_center($('#displayCenterProcess'));
+  btn = $('<button>');
   btn.attr({
     'class' : 'stage',
     'id' : stage.id,
@@ -586,8 +647,8 @@ function draw_collection(stage){
     'width' : parseInt(stage.w)*0.8,
     'height' : parseInt(stage.h)*0.8,
     'position' : 'absolute',
-    'left' : parseInt(stage.x) + 'px',
-    'top' : parseInt(stage.y) + 'px',
+    'left' : parseInt(stage.x) + center.x + 'px',
+    'top' : parseInt(stage.y) + center.y + 'px',
     'transform' : 'translate(-50%, -50%) skew(-45deg)',
     'border' : '1px solid black',
     'background-color' : 'white',
