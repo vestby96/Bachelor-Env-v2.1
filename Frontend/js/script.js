@@ -1,7 +1,7 @@
 // global variables
 var ip, port, global_path, customer_name, process_name_list, selected_process;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
-ip = '192.168.0.32';
+ip = 'localhost';
 port = '8000';
 customer_name = 'customer';
 
