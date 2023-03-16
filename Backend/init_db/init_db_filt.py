@@ -25,7 +25,7 @@ def init_db_filt():
     # rebuild the table and instert the test process
     cursor = mydb.cursor()
     cursor.execute("DROP TABLE IF EXISTS xml")
-    cursor.execute("CREATE TABLE xml (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL)")
+    cursor.execute("CREATE TABLE xml (id INT AUTO_INCREMENT PRIMARY KEY, processId VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL)")
     cursor.close()
     
     print('db-filt initalized')

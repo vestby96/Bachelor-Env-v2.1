@@ -1,29 +1,39 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <script rel="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script rel="text/javascript" src="./js/script.js"></script>
-        <link rel="stylesheet" href="./css/styleIndex.css">
-        <title>Visualizer</title>
-    </head>
-    <body>
-        <!----------------------- Header with dropdown and customer name ----------------------------->
-        <header class="info" id="processInfo">
-            <div class="dropdown">
-                <button class="dropbtn">Processes</button>
-                <div class="dropdown-content"></div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/scriptNew.js"></script>
+    <link rel="stylesheet" href="./css/styleIndex.css">
+    <link rel="shortcut icon" type="image/x-icon" href="https://images.squarespace-cdn.com/content/v1/6348175dfb4742355176e669/28f326e8-9879-48c7-bfc9-4f1c03baa1a6/favicon.ico?format=100w">
+    <title>Visualizer</title>
+</head>
+<body>
+    <nav>
+        <div id="logo"></div>
+    </nav>
+
+    <section>
+        <div id="margin">
+            <div id="marginTop">
+                <h3>processes</h3>
+                <div onclick="toggle_filter()"></div>
             </div>
-            <div class="info" id="customer"><h2></h2></div>
-        </header>
+            <div id="searchDiv">
+                <input id="searchInput" onkeyup="search()" placeholder="Search...">
+            </div>
+        </div>
 
-        <!---------------------------------------- Path ---------------------------------------------->
-        <div class="path" id="processPath"></div>
-
-        <!------------------------------- Display of the process ------------------------------------->
-        <section class="displaySection" id="displaySectionProcess">
-            <svg id="svg"></svg>
-            <div class="displayCenter" id="displayCenterProcess"></div>
-        </section>
-    </body>
+        <div id="display">
+            <div id="path" class="path"></div>
+            <div id="displayProcess">
+                <p id="pageLabel"></p>
+                <svg></svg>
+                <div id="displayCenterProcess"></div>
+            </div>
+        </div>
+    </section>
+</body>
 </html>

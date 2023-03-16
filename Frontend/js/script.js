@@ -1,57 +1,161 @@
 // global variables
-var ip, port, global_path, customer_name, process_name_list, selected_process;
+var ip, port, global_path, customer_name, customer_str, process_name_list, selected_process;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
 ip = 'localhost';
 port = '8000';
-customer_name = 'customer';
 
 $(document).ready(function(){
-  get_process_names();
+  customer_name = 'customer';
   customer_str = capitalize_str(customer_name);
-  $('#customer h2').append(customer_str);
+  $('nav h1').append(customer_str);
+  
+  // adjust the height of the margin
+  $('#margin').css('height', $(window).outerHeight() - $('nav').outerHeight());
+  $('#displayProcess').css('height', $(window).outerHeight() - $('nav').outerHeight() - $('#path').outerHeight() - 4);
+
+  get_process_names();
+  
   window.onresize = function(){
     console.log('resize').delay(800);
   };
 });
 
-function get_size(id = ''){
-  var subsheet, stage_list, stage, i, x, y, max_x, max_y, min_x, min_y, dimensions;
-  max_x = max_y = min_x = min_y = 0;
-
-  if (id == '' || !id){
-    // get size of main_page
-    stage_list = selected_process.child_process.stage_list;
-    for (i = 0; i < stage_list.length; i++){
-      stage = stage_list[i];
-      if (stage.subsheet_id == '0' || !stage.subsheet_id || stage.subsheet_id == ''){
-        x = parseInt(stage.x);
-        y = parseInt(stage.y);
-        if (x > max_x){
-          max_x = x;
-        } else if (x < min_x){
-          min_x = x;
-        };
-        if (y > max_y){
-          max_y = y;
-        } else if (y < min_y){
-          min_y = y;
-        };
+function path_scroll(){
+  var element, length, position;
+  element = $('#path');
+  length = element.prop('scrollWidth') - element.outerWidth();
+  position = 0;
+  element.bind('wheel', (e) => {
+    if (position <= length && position >= 0) {
+      if (e.originalEvent.wheelDelta / 120 > 0) {
+        position -= 20;
+        element.scrollLeft(position);
+      } else {
+        position += 20;
+        element.scrollLeft(position);
       };
+    } else if (position > length){
+      position = length - 20;
+    } else if (position < 0){
+      position = 0 + 20;
     };
-  } else {
-    // get size of subsheet
-  };
-  dimensions = {'x' : Math.abs(max_x) + Math.abs(min_x), 'y' : Math.abs(max_y) + Math.abs(min_y)};
-  return dimensions;
+  });
+  element.scroll(() => {
+    position = element.scrollLeft();
+  });
 };
 
-function get_center(element){
-  var width, heigth, center;
-  width = element.outerWidth();
-  heigth = element.outerHeight();
+function move_items(){
+  $('.stage').each((i, element) => {
+    var top = $(element).css('top');
+    var left = $(element).css('left');
+    $(element).css({
+      'top' : get_center().y + top + 'px',
+      'left' : get_center().x + left + 'px',
+    });
+  });
+};
 
-  center = {'x' : width / 2, 'y' : heigth / 2};
-  return center;
+function get_center(){
+  var display_element = $('#displayProcess');
+  var x = display_element.outerWidth() / 2;
+  var y = display_element.outerHeight() / 2;
+  return {'x' : x, 'y' : y};
+};
+
+function dropdown_item(id, name){
+  var process_element, buttons_element, processButton_element, process_p, dropdownButton_element, dropdown_p, dropdownContent_element, page_element, i;
+  process_element = $('<div>');
+  process_element.attr({
+    'class' : 'process',
+    'id' : id,
+  });
+
+  buttons_element = $('<div>');
+  buttons_element.attr({
+    'class' : 'buttons',
+    'id' : id,
+    'onclick' : 'dropdown_process("' + id + '", "' + name + '")',
+  });
+
+  processButton_element = $('<button>');
+  processButton_element.attr({
+    'class' : 'processButton',
+    'id' : id,
+    'onclick' : 'console.log("' + name + '")',
+  });
+
+  process_p = $('<p>');
+  process_p.append(name);
+
+  dropdown_p = $('<p>');
+  dropdown_p.css({
+    'width' : '20px',
+    'height' : '20px',
+    'background-image' : 'url("./img/arrow-left.png")',
+    'background-position' : 'center',
+    'background-size' : '80%',
+    'background-repeat' : 'no-repeat',
+  });
+
+  dropdownButton_element = $('<button>');
+  dropdownButton_element.attr({
+    'class' : 'dropdownButton',
+    'id' : id,
+  });
+
+  dropdownContent_element = $('<div>');
+  dropdownContent_element.attr({
+    'class' : 'dropdownContent',
+    'id' : id,
+  });
+  /*
+  for (i = 0; i < subsheets; i++){
+    page_element = $('<input>');
+    page_element.attr({
+      'class' : 'page',
+      'id' : id
+      'type' : 'submit',
+      'value' : 'subsheet ' + i,
+      'onclick' : 'console.log("process ' + id + ', subsheet ' + i + '")',
+    });
+    dropdownContent_element.append(page_element);
+  };
+  */
+  processButton_element.append(process_p);
+  dropdownButton_element.append(dropdown_p);
+  buttons_element.append(processButton_element,dropdownButton_element);
+  process_element.append(buttons_element, dropdownContent_element)
+  $('#margin').append(process_element);
+};
+
+function dropdown_process(id, name){
+  // variables
+  var buttons, dropdownButton, dropdownContent, i;
+  
+  //styles
+  buttons = $('.buttons').filter('[id="' + id + '"]');
+  buttons.toggleClass('openButtons');
+  dropdownButton = $('.dropdownButton').filter('[id="' + id + '"]');
+  dropdownButton.toggleClass('open');
+  dropdownContent = $('.dropdownContent').filter('[id="' + id + '"]');
+  dropdownContent.toggleClass('show');
+
+  process = get_process(id, name);
+  console.log(process);
+  for (i = 0; i < process.child_process.subsheet_list.length; i++){
+
+  };
+};
+
+function path_item(subsheet_id){
+  var button;
+  button = $('<button>');
+  button.attr({
+    'onclick' : 'console.log("' + subsheet_id + '")'
+  });
+  button.append('Page: ' + subsheet_id);
+  $('#path').append('/', button);
 };
 
 function draw_line(x1, y1, x2, y2){
@@ -122,19 +226,14 @@ function get_process_names(){
       success:function(data){
         // checking if the api response is an error
         if (data.length) {
-          console.log(data);
           process_name_list = data;
-          // add the processes to the dropdown
+          console.log(process_name_list);
+
           for (var i = 0; i < process_name_list.length; i++){
-            str = capitalize_str(process_name_list[i]);
-            
-            var btn_element = $('<button>');
-            btn_element.attr({
-              'class' : '',
-              'onclick' : 'get_process("' + process_name_list[i] + '")',
-            }).append(str);
-            $('.dropdown-content').append(btn_element);
-          }
+            var id = process_name_list[i][0];
+            var name = process_name_list[i][1];
+            dropdown_item(id, name);
+          };
         } else {
           console.log('No customer found');
         };
@@ -148,7 +247,30 @@ function get_process_names(){
   };
 };
 
-function get_process(process_name){
+function get_process(id, name){
+  try {
+    // api call to get the process content
+    $.ajax({
+      type: 'GET',
+      url: 'http://' + ip + ':' + port + '/' + customer_name + '/' + name + '/',
+      success:function(data){
+        // if the data type is an object it is an error
+        if (data.length){
+          return data[0];
+        } else {
+          console.log('No Process Found');
+        };
+      },
+      error(error){
+        console.log(error);
+      }
+    });
+  } catch {
+    console.log('No Process Found');
+  };
+}
+
+function select_process(process_name){
   try {
     // api call to get the process content
     $.ajax({

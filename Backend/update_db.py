@@ -170,11 +170,11 @@ def reset_db_filt():
     # rebuild the table and instert the test process
     cursor = mydb.cursor()
     cursor.execute("DROP TABLE IF EXISTS xml")
-    cursor.execute("CREATE TABLE xml (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL)")
+    cursor.execute("CREATE TABLE xml (id INT AUTO_INCREMENT PRIMARY KEY, processId VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL)")
     cursor.close()
     print('DB filt is reset')
 
-def push_to_db_filt(name: str, content: str):
+def push_to_db_filt(id: str, name: str, content: str):
     # connect to filtered db files
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
@@ -184,9 +184,9 @@ def push_to_db_filt(name: str, content: str):
     )
     cursor = mydb.cursor()
     # sql string with arguments
-    sql = "INSERT INTO xml (name, content) VALUES (%s, %s)"
+    sql = "INSERT INTO xml (processId, name, content) VALUES (%s, %s, %s)"
     name = name.lower()
-    args = (name, content)
+    args = (id, name, content)
     cursor.execute(sql, args)
     # commit the commands
     mydb.commit()
@@ -202,7 +202,9 @@ def main():
     for item in xml_list:
         name = item[1]
         content = item[2]
-        analyzed_list = json.dumps(analyze_and_filter(content))
-        push_to_db_filt(name, analyzed_list)
+        analyzed_list = analyze_and_filter(content)
+        id = str(analyzed_list[0]['id'])
+        json_list = json.dumps(analyzed_list)
+        push_to_db_filt(id, name, json_list)
 
 main()

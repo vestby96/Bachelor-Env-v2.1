@@ -11,6 +11,7 @@ app = FastAPI()
 # control access origin http
 origins = [
     'http://192.168.0.40:8080',
+    'http://192.168.0.101:5500',
     'http://localhost:8080',
     'http://127.0.0.1:5500'
 ]
@@ -37,20 +38,20 @@ def return_process_names(customer_name: str):
     except:
         return JSONResponse({'Error' : 'return_process_names() failed'})
 
-@app.get('/{customer_name}/{process_name}')
-def return_process(customer_name: str, process_name: str):
+@app.get('/{customer_name}/{process_id}')
+def return_process(customer_name: str, process_id: str):
     try:
-        content = get_data_from_db(customer_name, process_name)
+        content = get_data_from_db(customer_name, process_id)
         return JSONResponse(content)
     except:
         return JSONResponse({'Error' : 'return_process() failed'})
 
 
-def get_data_from_db(customer_name: str, process_name: str = ''):
+def get_data_from_db(customer_name: str, process_id: str = ''):
     # if the client is looking for processes connected to customer
-    if process_name == '':
+    if process_id == '':
         try:
-            process_name_list = []
+            process_short_list = []
             # mysql connection
             mydb = mysql.connector.connect(
                 host="mysqldb-filt",
@@ -60,14 +61,18 @@ def get_data_from_db(customer_name: str, process_name: str = ''):
             )
             cursor = mydb.cursor()
             # selecting all content from the xml table
-            cursor.execute(f'SELECT name FROM xml')
+            cursor.execute(f'SELECT processId, name FROM xml')
             # storing the result from db in variable
             db_list = cursor.fetchall()
             cursor.close()
             for item in db_list:
-                process_name_list.append(item[0])
+                process_obj = {
+                    'id' : item[0],
+                    'name' : item[1],
+                }
+                process_short_list.append(process_obj)
             # returning the variable
-            return process_name_list
+            return process_short_list
         except:
             # customer name error
             return {'Error' : 'No customer found'}
@@ -75,7 +80,6 @@ def get_data_from_db(customer_name: str, process_name: str = ''):
     # else the client is looking for a specific process
     else:
         try:
-            process_list = []
             # mysql connection
             mydb = mysql.connector.connect(
                 host="mysqldb-filt",
@@ -85,7 +89,7 @@ def get_data_from_db(customer_name: str, process_name: str = ''):
             )
             cursor = mydb.cursor()
             # selecting all content from the xml table
-            cursor.execute(f'SELECT content FROM xml WHERE name = "{process_name}"')
+            cursor.execute(f'SELECT content FROM xml WHERE processId = "{process_id}"')
             # storing the result from db in variable
             content = cursor.fetchone()
             cursor.close()
