@@ -233,14 +233,10 @@ section{
     width: 100%;
     height: 100%;
 }
-#displayProcess svg line{
-    stroke: black;
-    stroke-width: 1px;
-}
 #pageLabel{
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 1%;
+    left: 1%;
 }
 #displayCenterProcess{
     position: absolute;
