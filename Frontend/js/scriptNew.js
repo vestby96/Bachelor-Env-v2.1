@@ -17,7 +17,6 @@ $(document).ready(() => {
     path_scroll();
     $('#margin').css('height', $(window).outerHeight() - $('nav').outerHeight());
     $('#displayProcess').css('height', $(window).outerHeight() - $('nav').outerHeight() - $('#path').outerHeight() - 4);
-    //move_items();
   });
 });
 
@@ -42,13 +41,13 @@ function get_full_process(process_id, purpose = '', page_id = ''){
     url: 'http://' + ip + ':' + port + '/' + customer_name + '/' + process_id,
     dataType: 'json',
     success:(data) => {
-      if (purpose == ''){
+      if (purpose == '' && page_id == ''){
         build_dropdown_content(data);
-      } else if (purpose == 'mainPage'){
+      } else if (purpose == 'mainPage' && page_id == ''){
         displayed_process = data[0];
         displayed_object = data[1];
         draw_main_page();
-      } else if (page_id != ''){
+      } else if ( purpose == '' && page_id != ''){
         displayed_process = data[0];
         displayed_object = data[1];
         draw_subsheet(page_id);
@@ -191,7 +190,7 @@ function build_dropdown_content(data){
       'id' : '0',
       'type' : 'submit',
       'value' : 'Main Page',
-      'onclick' : 'console.log("Page ' + 0 + '")',
+      'onclick' : 'empty_path();get_full_process("' + process_id + '", "mainPage")',
     });
     dropdownContent_element.append(page_element).stop().hide();
     
@@ -206,7 +205,7 @@ function build_dropdown_content(data){
         'id' : subsheet_id,
         'type' : 'button',
         'value' : subsheet_name,
-        'onclick' : 'console.log("' + subsheet_name + '")',
+        'onclick' : 'empty_path();get_full_process("' + process_id + '", "", "' + subsheet_id + '")',
       });
       dropdownContent_element.append(page_element);
     };
@@ -215,16 +214,6 @@ function build_dropdown_content(data){
     $('.process').filter('#' + process_id).append(dropdownContent_element);
     $('.process').filter('#' + process_id).find('.dropdownContent').stop().slideDown();
   };
-};
-
-function path_item(subsheet_id){
-  var button;
-  button = $('<button>');
-  button.attr({
-    'onclick' : 'console.log("' + subsheet_id + '")'
-  });
-  button.append('Page: ' + subsheet_id);
-  $('#path').append('/', button);
 };
 
 function empty_page(){
