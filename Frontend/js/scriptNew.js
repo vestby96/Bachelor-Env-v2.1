@@ -1,5 +1,5 @@
 var global_path, process_short_list, displayed_object, displayed_process, ip, port, customer_name;
-ip = '192.168.0.40';
+ip = 'localhost';
 port = '8000';
 customer_name = 'customer';
 
@@ -28,7 +28,6 @@ function get_process_short_list(){
     dataType: 'json',
     success: function(data){
       process_short_list = data;
-      console.log(process_short_list);
       build_margin(data);
     },
     error(e){
@@ -44,7 +43,6 @@ function get_full_process(process_id, purpose = '', page_id = ''){
     dataType: 'json',
     success:(data) => {
       if (purpose == ''){
-        console.log(data);
         build_dropdown_content(data);
       } else if (purpose == 'mainPage'){
         displayed_process = data[0];
@@ -126,7 +124,7 @@ function build_margin(short_list){
     processButton_element.attr({
       'class' : 'processButton showProcess',
       'id' : id,
-      'onclick' : 'console.log("' + name + '"); get_full_process("' + id + '", "mainPage")',
+      'onclick' : 'get_full_process("' + id + '", "mainPage")',
     }).append(process_p);
 
     buttons_element = $('<div>');
@@ -230,7 +228,6 @@ function path_item(subsheet_id){
 };
 
 function empty_page(){
-    console.log('clean_page');
     $('#displayCenterProcess').empty();
 };
   
@@ -243,46 +240,47 @@ function edit_path(page_id, name, index = ''){
     // updating the list
     if (index == ''){
       // adding new list-item
-      var path_page = {
-        'id' : page_id,
-        'name' : name,
-      };
+      var path_page = {'id' : page_id, 'name' : name};
       global_path.push(path_page);
     } else {
       // removing all list items after index
-      global_path.length = parseInt(index + 1);
+      global_path.length = parseInt(index) + 1;
     };
+    // last draw the new path
     draw_path();
 };
 
 function draw_path(){
     // variables
     var path_div, btn_element, i;
-    // updating the path-element
+    // empty the entire path-element
     path_div = $('#path');
     path_div.empty();
   
+    // loop through the path list
     for (i = 0; i < global_path.length - 1; i++){
+      // create a button for each entry
       btn_element = $('<button>');
       btn_element.attr({
         'class' : 'pathButton',
       });
-  
+      
+      // if the id of the page is 0 it is the main page
       if (global_path[i].id == '0'){
         btn_element.attr({
-          'onclick' : 'edit_path("", "", ' + i + '); draw_main_page()',
+          'onclick' : 'edit_path("", ""," ' + i + '"); draw_main_page()',
         });
       } else {
         btn_element.attr({
-          'onclick' : 'edit_path("", "", ' + (i - 1) + '); draw_subsheet("' + global_path[i].id + '")',
+          'onclick' : 'edit_path("", "", "' + (i - 1) + '"); draw_subsheet("' + global_path[i].id + '")',
         });
-      };
-      btn_element.append(global_path[i].name);
-      path_div.append('/');
+      }
+      btn_element.text('/' + global_path[i].name);
       path_div.append(btn_element);
     };
-    $('#pageLabel').empty();
-    $('#pageLabel').append(global_path[global_path.length - 1].name);
+
+    // adding the current page to the label
+    $('#pageLabel').empty().append(global_path[global_path.length - 1].name);
 };
 
 function draw_line(x1, y1, x2, y2){

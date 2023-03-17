@@ -345,7 +345,7 @@ function edit_path(page_id, name, index){
     global_path.push(path_page);
   } else {
     // removing all list items after index
-    global_path.length = parseInt(index + 1);
+    global_path.length = parseInt(index) + 1;
   };
   draw_path();
 };
