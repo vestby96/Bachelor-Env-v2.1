@@ -3,13 +3,13 @@ import xml.etree.ElementTree as ET
 import json
 from datetime import date
 
-def pull_from_db_sens():
+def pull_from_db_sens(customer_name):
     # connect to sensitive db files
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
         password="Password-123",
-        database="customer"
+        database=customer_name
     )
     cursor = mydb.cursor()
     # selecting all rows and columns from the xml-table
@@ -198,7 +198,7 @@ def main():
     today = date.today()
     print("Today's date:", today)
     reset_db_filt()
-    xml_list = pull_from_db_sens()
+    xml_list = pull_from_db_sens('customer')
     for item in xml_list:
         name = item[1]
         content = item[2]

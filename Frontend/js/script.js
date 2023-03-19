@@ -1,25 +1,22 @@
+// global variables
 var global_path, process_short_list, displayed_object, displayed_process, ip, port, customer_name, hoverTimeout;
 ip = 'localhost';
 port = '8000';
 customer_name = 'customer';
 
 $(document).ready(() => {
-  // adjust the height of the margin
-  $('#margin').css('height', $(window).outerHeight() - $('nav').outerHeight());
-  $('#displayProcess').css('height', $(window).outerHeight() - $('nav').outerHeight() - $('#path').outerHeight() - 4);
-  
+  // run initial functions
   path_scroll();
-
   get_process_short_list();
 
+  // some functions are effected by the width of the window
   $(window).resize(() => {
     draw_all_lines();
     path_scroll();
-    $('#margin').css('height', $(window).outerHeight() - $('nav').outerHeight());
-    $('#displayProcess').css('height', $(window).outerHeight() - $('nav').outerHeight() - $('#path').outerHeight() - 4);
   });
 });
 
+// function to get the short list of process data
 function get_process_short_list(){
   $.ajax({
     type: 'GET',
@@ -35,6 +32,7 @@ function get_process_short_list(){
   });
 };
 
+// function to get the full info list of a given process id
 function get_full_process(process_id, purpose = '', page_id = ''){
   $.ajax({
     type: 'GET',
@@ -42,23 +40,28 @@ function get_full_process(process_id, purpose = '', page_id = ''){
     dataType: 'json',
     success:(data) => {
       if (purpose == '' && page_id == ''){
+        // if only process id i given, the dropdown content will be built
         build_dropdown_content(data);
       } else if (purpose == 'mainPage' && page_id == ''){
+        // if the purpose says main page, the main page will be drawn
         displayed_process = data[0];
         displayed_object = data[1];
         draw_main_page();
       } else if ( purpose == '' && page_id != ''){
+        // if a page id is given, the given page will be drawn
         displayed_process = data[0];
         displayed_object = data[1];
         draw_subsheet(page_id);
       };
     },
     error(e){
+      // catch error
       alert(e);
     }
   });
 };
 
+// horizontal scroll for the path
 function path_scroll(){
   var element, length, position;
   element = $('#path');
@@ -84,22 +87,7 @@ function path_scroll(){
   });
 };
 
-function move_items(){
-  $('.stage').each((i, element) => {
-    $(element).css({
-      'top' : get_center().y + 'px',
-      'left' : get_center().x + 'px',
-    });
-  });
-};
-
-function get_center(){
-  var display_element = $('#displayProcess');
-  var x = display_element.outerWidth() / 2;
-  var y = display_element.outerHeight() / 2;
-  return {'x' : x, 'y' : y};
-};
-
+// input a short list of process ids and names and add them to the margin
 function build_margin(short_list){
   var process_element, buttons_element, processButton_element, process_p, dropdownButton_element, dropdown_p, i;
   for (i = 0; i < short_list.length; i++){
@@ -143,6 +131,7 @@ function build_margin(short_list){
   };
 };
 
+// toggle the dropdown content in the margin of a given process
 function toggle_dropdown(process_id){
   var process, button, content, dropdownTimeout;
   
@@ -164,6 +153,7 @@ function toggle_dropdown(process_id){
   };
 };
 
+// get the the main page and all subsheets of a given process and add them to the margin
 function build_dropdown_content(data){
   var i, j;
   
@@ -216,15 +206,18 @@ function build_dropdown_content(data){
   };
 };
 
+// remove all stages
 function empty_page(){
     $('#displayCenterProcess').empty();
 };
-  
+
+// empty and reset the path
 function empty_path(){
     global_path = [{'id': '0', 'name' : 'Main Page'}];
     $('#path').empty();
 };
 
+// add or remove items in the path
 function edit_path(page_id, name, index = ''){
     // updating the list
     if (index == ''){
@@ -239,6 +232,7 @@ function edit_path(page_id, name, index = ''){
     draw_path();
 };
 
+// draw the path
 function draw_path(){
     // variables
     var path_div, btn_element, i;
@@ -272,6 +266,7 @@ function draw_path(){
     $('#pageLabel').empty().append(global_path[global_path.length - 1].name);
 };
 
+// draw an svg path from given start and end coordinates
 function draw_line(x1, y1, x2, y2){
   var line, midX, midY;
   midX = (x1 + x2)/2
@@ -286,6 +281,7 @@ function draw_line(x1, y1, x2, y2){
   $('svg').append(line);
 };
 
+// get the positions of all stages with onsucces and draw lines from start to end stage
 function draw_all_lines(){
   $('svg').find('path').filter('#line').remove();
 
@@ -308,6 +304,97 @@ function draw_all_lines(){
       });
     };
   });
+};
+
+// toggle the search filter in the html
+function toggle_filter(){
+  // declearing variables
+  var marginTop, input, inputDiv, button;
+
+  // getting the html elements
+  marginTop = $('#marginTop');
+  button = $('#marginTop div');
+  input = $('#searchInput');
+  inputDiv = $('#searchDiv');
+
+  if (input.hasClass('openSearch')){
+    // hide the search input
+    button.css({
+      'transform' : 'scaleX(-1) translate(50%, -50%)',
+    });
+    input.val('');
+    search();
+  } else {
+    // show the search input
+    button.css({
+      'transform' : 'scaleX(1) translate(-50%, -50%)',
+    });
+  };
+
+  // toggle the search class
+  input.toggleClass('openSearch');
+  inputDiv.toggleClass('openSearchDiv');
+};
+
+// filter the processes in the margin
+function search(){
+  var search = $('#searchInput').val().toLowerCase();
+
+  var process = $('.process').each((i, element) => {
+    var name = $(element).find('.processButton').text();
+    if (name.indexOf(search) != -1){
+      $(element).stop().show();
+    } else {
+      $(element).stop().hide();
+    };
+  });
+};
+
+// hover effect on the stages
+function hover_effect(){
+  // hover on the stage element
+    $('.stage').hover(function(){
+      // mouse enter
+      var stage_element = $(this);
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(function() {
+        var hover_div, hover_x, hover_y, id_element, type_element, button_element;
+        
+        id_element = $('<p>');
+        id_element.append(stage_element.attr('id'));
+
+        type_element = $('<p>');
+        type_element.append(stage_element.attr('stage_type'));
+
+        button_element = $('<button>');
+        button_element.append('...');
+        
+        hover_div = $('<div>');
+        hover_x = stage_element.position().left;
+        hover_y = stage_element.position().top + stage_element.outerHeight() + 2;
+        hover_div.attr({
+          'class' : 'hover',
+        }).css({
+          'left' : hover_x,
+          'top' : hover_y,
+        });
+        hover_div.append(id_element, type_element, button_element);
+        $('#displayCenterProcess').append(hover_div);
+      }, 500);
+    }, function(){
+      // mouse leave
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(function(){
+        $('.hover').remove();
+      }, 500)
+    });
+    
+    // hover on the hover element
+    $('.hover').hover(function(){
+      // mouse enter
+    }, function(){
+      // mouse leave
+    })
 };
 
 //---------------------- Draw Pages -----------------------
@@ -698,94 +785,4 @@ function draw_collection(stage){
   
 function draw_stage_page(stage){
     draw_default_stage(stage);
-};
-
-//---------------------------- Other ------------------------
-
-function toggle_filter(){
-  // declearing variables
-  var marginTop, input, inputDiv, button;
-
-  // getting the html elements
-  marginTop = $('#marginTop');
-  button = $('#marginTop div');
-  input = $('#searchInput');
-  inputDiv = $('#searchDiv');
-
-  if (input.hasClass('openSearch')){
-    // hide the search input
-    button.css({
-      'transform' : 'scaleX(-1) translate(50%, -50%)',
-    });
-    input.val('');
-    search();
-  } else {
-    // show the search input
-    button.css({
-      'transform' : 'scaleX(1) translate(-50%, -50%)',
-    });
-  };
-
-  // toggle the search class
-  input.toggleClass('openSearch');
-  inputDiv.toggleClass('openSearchDiv');
-};
-
-function search(){
-  var search = $('#searchInput').val().toLowerCase();
-
-  var process = $('.process').each((i, element) => {
-    var name = $(element).find('.processButton').text();
-    if (name.indexOf(search) != -1){
-      $(element).stop().show();
-    } else {
-      $(element).stop().hide();
-    };
-  });
-};
-
-function hover_effect(){
-  // hover on the stage element
-    $('.stage').hover(function(){
-      // mouse enter
-      var stage_element = $(this);
-      clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(function() {
-        var hover_div, hover_x, hover_y, id_element, type_element, button_element;
-        
-        id_element = $('<p>');
-        id_element.append(stage_element.attr('id'));
-
-        type_element = $('<p>');
-        type_element.append(stage_element.attr('stage_type'));
-
-        button_element = $('<button>');
-        button_element.append('...');
-        
-        hover_div = $('<div>');
-        hover_x = stage_element.position().left;
-        hover_y = stage_element.position().top + stage_element.outerHeight() + 2;
-        hover_div.attr({
-          'class' : 'hover',
-        }).css({
-          'left' : hover_x,
-          'top' : hover_y,
-        });
-        hover_div.append(id_element, type_element, button_element);
-        $('#displayCenterProcess').append(hover_div);
-      }, 500);
-    }, function(){
-      // mouse leave
-      clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(function(){
-        $('.hover').remove();
-      }, 500)
-    });
-    
-    // hover on the hover element
-    $('.hover').hover(function(){
-      // mouse enter
-    }, function(){
-      // mouse leave
-    })
 };
