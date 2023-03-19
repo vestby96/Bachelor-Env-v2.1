@@ -352,49 +352,20 @@ function search(){
 
 // hover effect on the stages
 function hover_effect(){
-  // hover on the stage element
-    $('.stage').hover(function(){
-      // mouse enter
-      var stage_element = $(this);
-      clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(function() {
-        var hover_div, hover_x, hover_y, id_element, type_element, button_element;
-        
-        id_element = $('<p>');
-        id_element.append(stage_element.attr('id'));
-
-        type_element = $('<p>');
-        type_element.append(stage_element.attr('stage_type'));
-
-        button_element = $('<button>');
-        button_element.append('...');
-        
-        hover_div = $('<div>');
-        hover_x = stage_element.position().left;
-        hover_y = stage_element.position().top + stage_element.outerHeight() + 2;
-        hover_div.attr({
-          'class' : 'hover',
-        }).css({
-          'left' : hover_x,
-          'top' : hover_y,
-        });
-        hover_div.append(id_element, type_element, button_element);
-        $('#displayCenterProcess').append(hover_div);
-      }, 500);
-    }, function(){
-      // mouse leave
-      clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(function(){
-        $('.hover').remove();
-      }, 500)
-    });
-    
-    // hover on the hover element
-    $('.hover').hover(function(){
-      // mouse enter
-    }, function(){
-      // mouse leave
-    })
+  $('.stage').mouseenter(function() {
+    var hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
+    hover.addClass('showHover').stop().slideDown();
+  });
+  $('.stage').mouseleave(function() {
+    var hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
+    hover.removeClass('showHover').stop().slideUp();
+  });
+  $('.hover').mouseenter(function() {
+    $(this).addClass('showHover').stop().slideDown();
+  });
+  $('.hover').mouseleave(function() {
+    $(this).removeClass('showHover').stop().slideUp();
+  });
 };
 
 //---------------------- Draw Pages -----------------------
@@ -507,7 +478,7 @@ function draw_subsheet(subsheet_id){
 
 //---------------------- Draw Stages ----------------------
 function draw_default_stage(stage){
-    var btn;
+    var btn, hover, hover_x, hover_y, hover_btn, hover_type;
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -521,19 +492,40 @@ function draw_default_stage(stage){
       'justify-content' : 'center',
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%)',
-      'border' : '1px solid black',
       'background-color' : 'white',
-      'cursor' : 'pointer',
       'padding' : '10px',
       'z-index' : 1,
       'font-size' : 12,
     });
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_start_end(stage){
@@ -551,13 +543,10 @@ function draw_start_end(stage){
       'justify-content' : 'center',
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%)',
-      'border' : '1px solid black',
       'background-color' : 'white',
-      'cursor' : 'pointer',
       'padding' : '10px',
       'border-radius' : '25%',
       'z-index' : 1,
@@ -565,6 +554,30 @@ function draw_start_end(stage){
     });
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_choice(stage){
@@ -595,19 +608,40 @@ function draw_stage_subsheet(stage){
       'justify-content' : 'center',
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%)',
-      'border' : '1px solid black',
       'background-color' : 'white',
-      'cursor' : 'pointer',
       'z-index' : 1,
       'font-size' : 12,
     });
   
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_stage_subsheet_info(stage){
@@ -626,19 +660,40 @@ function draw_stage_process_info(stage){
     }).css({
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%)',
-      'border' : '1px solid black',
       'background-color' : 'white',
-      'cursor' : 'pointer',
       'opacity' : 0.5,
       'z-index' : 0,
       'font-size' : 12,
     });
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_stage_process(stage){
@@ -662,7 +717,6 @@ function draw_decision(stage){
       'justify-content' : 'center',
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%)',
@@ -672,12 +726,35 @@ function draw_decision(stage){
       'background-repeat' : 'no-repeat',
       'background-size' : '100% 95%',
       'background-position' : 'center',
-      'cursor' : 'pointer',
       'z-index' : 1,
       'font-size' : 12,
     });
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_exception(stage){
@@ -732,19 +809,40 @@ function draw_block(stage){
     }).css({
       'width' : parseInt(stage.w),
       'height' : parseInt(stage.h),
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + parseInt(stage.w)/2 + 'px',
       'top' : parseInt(stage.y) + parseInt(stage.h)/2 + 'px',
       'transform' : 'translate(-50%, -50%)',
-      'border' : '1px solid black',
       'background-color' : 'lightblue',
-      'cursor' : 'pointer',
       'opacity' : 0.5,
       'z-index' : 0,
       'font-size' : 11,
     });
     btn.append(stage.name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_collection(stage){
@@ -759,13 +857,10 @@ function draw_collection(stage){
     }).css({
       'width' : parseInt(stage.w)*0.8,
       'height' : parseInt(stage.h)*0.8,
-      'position' : 'absolute',
       'left' : parseInt(stage.x) + 'px',
       'top' : parseInt(stage.y) + 'px',
       'transform' : 'translate(-50%, -50%) skew(-45deg)',
-      'border' : '1px solid black',
       'background-color' : 'white',
-      'cursor' : 'pointer',
       'padding' : '5px',
       'z-index' : 1,
       'font-size' : 12,
@@ -781,6 +876,30 @@ function draw_collection(stage){
   
     btn.append(stage_name);
     $('#displayCenterProcess').append(btn);
+
+    hover_x = $('#' + stage.id).position().left;
+    hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
+
+    hover_type = $('<p>');
+    hover_type.append(stage.type);
+
+    hover_btn = $('<button>');
+    hover_btn.attr({
+
+    }).css({
+      
+    }).append('...');
+
+    hover = $('<div>');
+    hover.attr({
+      'class' : 'hover',
+      'id' : stage.id,
+    }).css({
+      'top' : hover_y + 'px',
+      'left' : hover_x + 'px',
+    }).append(hover_type, hover_btn);
+
+    $('#displayCenterProcess').append(hover);
 };
   
 function draw_stage_page(stage){
