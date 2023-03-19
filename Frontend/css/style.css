@@ -240,13 +240,22 @@ section{
     left: 50%;
     transform: translate(-50%, -50%);
 }
+.stage{
+    position: absolute;
+    border: 1px solid black;
+    cursor: pointer;
+}
 .hover{
     position: absolute;
     background-color: lightgrey;
-    z-index: 1;
+    display: none;
     border: 1px solid black;
     padding: 5px 10px;
     white-space: nowrap;
+
+}
+.showHover{
+    z-index: 2;
 }
 
 /* Styling the scrollbar */
