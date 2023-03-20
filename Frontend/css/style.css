@@ -247,12 +247,16 @@ section{
 }
 .hover{
     position: absolute;
-    background-color: lightgrey;
+    background-color: #e3e1db;
     display: none;
     border: 1px solid black;
     padding: 5px 10px;
     white-space: nowrap;
-
+    box-shadow: 00px 0px 5px rgba(0, 0, 0, 0.504);
+}
+.hover button{
+    background-color: transparent;
+    border: none;
 }
 .showHover{
     z-index: 2;

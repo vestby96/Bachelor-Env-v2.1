@@ -353,18 +353,23 @@ function search(){
 // hover effect on the stages
 function hover_effect(){
   $('.stage').mouseenter(function() {
-    var hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
-    hover.addClass('showHover').stop().slideDown();
+    var stage = $(this);
+    clearTimeout(hoverTimeout);
+    hoverTimeout = setTimeout(function(){
+      var hover = $('#displayCenterProcess').find('.hover').filter('#' + stage.attr('id'));
+      hover.addClass('showHover').stop().slideDown(200);
+    }, 1000);
   });
   $('.stage').mouseleave(function() {
+    clearTimeout(hoverTimeout);
     var hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
-    hover.removeClass('showHover').stop().slideUp();
+    hover.removeClass('showHover').stop().slideUp(100);
   });
   $('.hover').mouseenter(function() {
-    $(this).addClass('showHover').stop().slideDown();
+    $(this).addClass('showHover').stop().slideDown(200);
   });
   $('.hover').mouseleave(function() {
-    $(this).removeClass('showHover').stop().slideUp();
+    $(this).removeClass('showHover').stop().slideUp(100);
   });
 };
 
@@ -514,7 +519,7 @@ function draw_default_stage(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -566,7 +571,7 @@ function draw_start_end(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -630,7 +635,7 @@ function draw_stage_subsheet(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -682,7 +687,7 @@ function draw_stage_process_info(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -743,7 +748,7 @@ function draw_decision(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -831,7 +836,7 @@ function draw_block(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({
@@ -888,7 +893,7 @@ function draw_collection(stage){
 
     }).css({
       
-    }).append('...');
+    }).append('More...');
 
     hover = $('<div>');
     hover.attr({

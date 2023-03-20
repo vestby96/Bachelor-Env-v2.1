@@ -127,7 +127,8 @@
 				</stage>
 				<stage stageid="e6382b86-2e9a-4e55-87b6-51beb925b682" name="Loop Over Collection" type="LoopEnd">
 					<subsheetid>74d8a261-0f8f-4d6c-9d1a-c2e5f42d91a5</subsheetid>
-					<loginhibit onsuccess="true" /><display x="-15" y="15" w="90" h="30" />
+					<loginhibit onsuccess="true" />
+					<display x="-15" y="15" w="90" h="30" />
 					<onsuccess>bffc14dd-6768-43b7-89c4-cfdaaba8faec</onsuccess>
 					<groupid>76e3ebcb-6785-471d-8133-de400dbcc41f</groupid>
 				</stage>

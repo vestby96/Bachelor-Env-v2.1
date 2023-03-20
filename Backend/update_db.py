@@ -42,6 +42,7 @@ def analyze_and_filter(xml_string: str):
             process_dict = {
                 'id' : process.get('id'),
                 'name' : process.get('name'),
+                'xmlns' : process.get('xmlns'),
                 'child_process' : {}
             }
             parent_process_list.append(process_dict)
@@ -49,20 +50,73 @@ def analyze_and_filter(xml_string: str):
         else:
             process_dict = {
                 'name' : process.get('name'),
+                'version' : process.get('version'),
+                'bpversion' : process.get('bpversion'),
+                'narrative' : process.get('narrative'),
+                'byrefcollection' : process.get('byrefcollection'),
+                'view' : {
+                    'camerax' : int(),
+                    'cameray' : int(),
+                    'zoom' : int(),
+                },
+                'preconditions' : list(),
+                'endpoint' : str(),
                 'subsheet_list' : list(),
                 'stage_list' : list()
             }
-               
+            
+            # view
+            view_element = process.find('proc:view', ns)
+            if view_element is not None:
+                camerax = view_element.find('proc:camerax', ns)
+                cameray = view_element.find('proc:cameray', ns)
+                zoom = view_element.find('proc:zoom', ns)
+                if camerax is not None:
+                    process_dict['view']['camerax'] = float(camerax.text)
+                if cameray is not None:
+                    process_dict['view']['cameray'] = float(cameray.text)
+                if zoom is not None:
+                    process_dict['view']['zoom'] = float(zoom.text)
+            
+            # preconditions
+            preconditions = process.find('proc:preconditions', ns)
+            if preconditions is not None:
+                conditions = preconditions.findall('proc:condition', ns)
+                for condition in conditions:
+                    process_dict['preconditions'].append(condition.get('narrative'))
+            
+            # endpoint
+            process_dict['endpoint'] = str(process.find('proc:endpoint', ns).get('narrative'))
+            
             # select the subsheet elements
             for subsheet in process.findall('.//proc:subsheet', ns):
                 subsheet_dict = {
-                    'id' : str(subsheet.get('subsheetid')),
-                    'type' : str(subsheet.get('type')),
-                    'published' : subsheet.get('published')
+                    'id' : subsheet.get('subsheetid'),
+                    'type' : subsheet.get('type'),
+                    'published' : subsheet.get('published'),
+                    'name' : str(),
+                    'view' : {
+                        'camerax' : float(),
+                        'cameray' : float(),
+                        'zoom' : float(),
+                    }
                 }
                 name = subsheet.find('proc:name', ns)
                 if name is not None:
                     subsheet_dict['name'] = str(name.text)
+                
+                # view
+                view_element = subsheet.find('proc:view', ns)
+                if view_element is not None:
+                    camerax = view_element.find('proc:camerax', ns)
+                    cameray = view_element.find('proc:cameray', ns)
+                    zoom = view_element.find('proc:zoom', ns)
+                    if camerax is not None:
+                        subsheet_dict['view']['camerax'] = float(camerax.text)
+                    if cameray is not None:
+                        subsheet_dict['view']['cameray'] = float(cameray.text)
+                    if zoom is not None:
+                        subsheet_dict['view']['zoom'] = float(zoom.text)
                 
                 process_dict['subsheet_list'].append(subsheet_dict)
                     
@@ -71,20 +125,22 @@ def analyze_and_filter(xml_string: str):
                 stage_dict = {
                     'id' : str(stage.get('stageid')),
                     'name' : str(stage.get('name')),
-                    'type' : str(stage.get('type'))
+                    'type' : str(stage.get('type')),
+                    'outputs' : list(),
+                    'inputs' : list()
                 }
                     
                 # x, y, w, h
                 display_element = stage.find('proc:display', ns)
                 if display_element is not None:
-                    x = str(display_element.get('x'))
-                    y = str(display_element.get('y'))
+                    x = display_element.get('x')
+                    y = display_element.get('y')
                     try:
-                        w = str(display_element.get('w'))
-                        h = str(display_element.get('h'))
+                        w = display_element.get('w')
+                        h = display_element.get('h')
                     except:
-                        w = str(0)
-                        h = str(0)
+                        w = 0
+                        h = 0
                     stage_dict['x'] = x
                     stage_dict['y'] = y
                     stage_dict['w'] = w
@@ -93,10 +149,8 @@ def analyze_and_filter(xml_string: str):
                 # font
                 font_element = stage.find('proc:font', ns)
                 if font_element is not None:
-                    font_color = '#' + str(font_element.attrib['color'])
-                    font_size = str(font_element.attrib['size'])
-                    stage_dict['font_color'] = font_color
-                    stage_dict['font_size'] = font_size
+                    stage_dict['font_color'] = '#' + str(font_element.get('color'))
+                    stage_dict['font_size'] = font_element.get('size')
                    
                 # onsuccess
                 onsuccess_element = stage.find('proc:onsuccess', ns)
@@ -133,7 +187,136 @@ def analyze_and_filter(xml_string: str):
                 if onfalse_element is not None:
                     onfalse = str(onfalse_element.text)
                     stage_dict['onfalse'] = onfalse
-                        
+                
+                # outputs
+                outputs_element = stage.find('proc:outputs', ns)
+                if outputs_element is not None:
+                    outputs = outputs_element.findall('proc:output', ns)
+                    for output in outputs:
+                        output_obj = {
+                            'type' : output.get('type'),
+                            'name' : output.get('name'),
+                            'friendlyname' : output.get('friendlyname'),
+                            'stage' : output.get('stage')
+                        }
+                        stage_dict['outputs'].append(output_obj)
+
+                # inputs
+                inputs_element = stage.find('proc:inputs', ns)
+                if inputs_element is not None:
+                    inputs = inputs_element.findall('proc:inputs', ns)
+                    for input in inputs:
+                        input_obj = {
+                            'type' : input.get('type'),
+                            'name' : input.get('name'),
+                            'friendlyname' : input.get('friendlyname'),
+                            'stage' : input.get('stage'),
+                            'expr' : input.get('expr')
+                        }
+                        stage_dict['inputs'].append(input_obj)
+                
+                # decision expression
+                decision_element = stage.find('proc:decision', ns)
+                if decision_element is not None:
+                    stage_dict['decision'] = decision_element.get('expression')
+                
+                # exception
+                exception_element = stage.find('proc:exception', ns)
+                if exception_element is not None:
+                    stage_dict['exception']  = {
+                        'localized' : exception_element.get('localized'),
+                        'type' : exception_element.get('type'),
+                        'detail' : exception_element.get('detail')
+                    }
+                
+                # loginhibit
+                loginhibit_element = stage.find('proc:loginhibit', ns)
+                if loginhibit_element is not None:
+                    stage_dict['loginhibit'] = loginhibit_element.get('onsuccess')
+                
+                # group
+                groupid_element = stage.find('proc:groupid', ns)
+                if groupid_element is not None:
+                    stage_dict['groupid'] = str(groupid_element.text)
+                
+                # loop type
+                loop_type_element = stage.find('proc:looptype', ns)
+                if loop_type_element is not None:
+                    stage_dict['loop_type'] = str(loop_type_element.text)
+                
+                # loop data
+                loop_data_element = stage.find('proc:loopdata', ns)
+                if loop_data_element is not None:
+                    stage_dict['loop_data'] = str(loop_data_element.text)
+                
+                # data type
+                data_type_element = stage.find('proc:datatype', ns)
+                if data_type_element is not None:
+                    stage_dict['data_type'] = str(data_type_element.text)
+                
+                # private
+                private_element = stage.find('proc:private', ns)
+                if private_element is not None:
+                    stage_dict['private'] = True
+                else:
+                    stage_dict['private'] = False
+                
+                # alwaysinit
+                alwaysinit_element = stage.find('proc:alwaysinit', ns)
+                if alwaysinit_element is not None:
+                    stage_dict['alwaysinit'] = True
+                else:
+                    stage_dict['alwaysinit'] = False
+                
+                # collectioninfo
+                collectioninfo_element = stage.find('proc:collectioninfo', ns)
+                if collectioninfo_element is not None:
+                    stage_dict['collectioninfo'] = {}
+                    field = collectioninfo_element.find('proc:field', ns)
+                    if field is not None:
+                        stage_dict['collectioninfo']['field'] = {
+                            'name' : field.get('name'),
+                            'type' : field.get('type')
+                        }
+
+                # initialvalue
+                initialvalue_element = stage.find('proc:initialvalue', ns)
+                if initialvalue_element is not None:
+                    row_elements = initialvalue_element.findall('proc:row', ns)
+                    if len(row_elements) == 0:
+                        stage_dict['initialvalue'] = str(initialvalue_element.text)
+                    else:
+                        stage_dict['initialvalue'] = list()
+                        for row_element in row_elements:
+                            field_element = row_element.find('proc:field', ns)
+                            if field_element is not None:
+                                field = {
+                                    'name' : field_element.get('name'),
+                                    'type' : field_element.get('type'),
+                                    'value' : field_element.get('value')
+                                }
+                                stage_dict['initialvalue'].append(field)
+                
+                # resource
+                resource_element = stage.find('proc:resource', ns)
+                if resource_element is not None:
+                    stage_dict['resource'] = {
+                        'object' : resource_element.get('object'),
+                        'action' : resource_element.get('action')
+                    }
+                
+                # steps
+                steps_element = stage.find('proc:steps', ns)
+                if steps_element is not None:
+                    calculation_elements = steps_element.findall('proc:calculation', ns)
+                    for calculation_element in calculation_elements:
+                        stage_dict['steps'] = list()
+                        calculation = {
+                            'expression' : calculation_element.get('expression'),
+                            'stage' : calculation_element.get('stage')
+                        }
+                        stage_dict['steps'].append(calculation)
+                
                 process_dict['stage_list'].append(stage_dict)
                 
             # finding the parent process
