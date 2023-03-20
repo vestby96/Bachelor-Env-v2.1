@@ -123,11 +123,9 @@ def analyze_and_filter(xml_string: str):
             # select the stage elements
             for stage in process.findall('.//proc:stage', ns):
                 stage_dict = {
-                    'id' : str(stage.get('stageid')),
-                    'name' : str(stage.get('name')),
-                    'type' : str(stage.get('type')),
-                    'outputs' : list(),
-                    'inputs' : list()
+                    'id' : stage.get('stageid'),
+                    'name' : stage.get('name'),
+                    'type' : stage.get('type')
                 }
                     
                 # x, y, w, h
@@ -192,6 +190,7 @@ def analyze_and_filter(xml_string: str):
                 outputs_element = stage.find('proc:outputs', ns)
                 if outputs_element is not None:
                     outputs = outputs_element.findall('proc:output', ns)
+                    stage_dict['outputs'] = list()
                     for output in outputs:
                         output_obj = {
                             'type' : output.get('type'),
@@ -204,7 +203,8 @@ def analyze_and_filter(xml_string: str):
                 # inputs
                 inputs_element = stage.find('proc:inputs', ns)
                 if inputs_element is not None:
-                    inputs = inputs_element.findall('proc:inputs', ns)
+                    inputs = inputs_element.findall('proc:input', ns)
+                    stage_dict['inputs'] = list()
                     for input in inputs:
                         input_obj = {
                             'type' : input.get('type'),
@@ -309,8 +309,8 @@ def analyze_and_filter(xml_string: str):
                 steps_element = stage.find('proc:steps', ns)
                 if steps_element is not None:
                     calculation_elements = steps_element.findall('proc:calculation', ns)
+                    stage_dict['steps'] = list()
                     for calculation_element in calculation_elements:
-                        stage_dict['steps'] = list()
                         calculation = {
                             'expression' : calculation_element.get('expression'),
                             'stage' : calculation_element.get('stage')
