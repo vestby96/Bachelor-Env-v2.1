@@ -1,5 +1,6 @@
 // global variables
-var global_path, process_short_list, displayed_object, displayed_process, ip, port, customer_name, hoverTimeout;
+var global_path, process_short_list, displayed_object, displayed_process, file_info, ip, port, customer_name, hoverTimeout;
+
 ip = 'localhost';
 port = '8000';
 customer_name = 'customer';
@@ -45,12 +46,12 @@ function get_full_process(process_id, purpose = '', page_id = ''){
       } else if (purpose == 'mainPage' && page_id == ''){
         // if the purpose says main page, the main page will be drawn
         displayed_process = data[0];
-        displayed_object = data[1];
+        file_info = data[1];
         draw_main_page();
       } else if ( purpose == '' && page_id != ''){
         // if a page id is given, the given page will be drawn
         displayed_process = data[0];
-        displayed_object = data[1];
+        file_info = data[1];
         draw_subsheet(page_id);
       };
     },
@@ -63,7 +64,7 @@ function get_full_process(process_id, purpose = '', page_id = ''){
 
 // horizontal scroll for the path
 function path_scroll(){
-  var element, length, position;
+  let element, length, position;
   element = $('#path');
   length = element.prop('scrollWidth') - element.outerWidth();
   position = 0;
@@ -89,9 +90,8 @@ function path_scroll(){
 
 // input a short list of process ids and names and add them to the margin
 function build_margin(short_list){
-  var process_element, buttons_element, processButton_element, process_p, dropdownButton_element, dropdown_p, i;
+  let process_element, buttons_element, processButton_element, process_p, dropdownButton_element, dropdown_p, id, name, i;
   for (i = 0; i < short_list.length; i++){
-    var id, name;
     id = short_list[i].id;
     name = short_list[i].name;
 
@@ -155,16 +155,15 @@ function toggle_dropdown(process_id){
 
 // get the the main page and all subsheets of a given process and add them to the margin
 function build_dropdown_content(data){
-  var i, j;
+    let j;
   
-  for (i = 0; i < data.length; i++){
     // variables
-    var process_id, process_name, subsheet_list, subsheet_id, subsheet_name, dropdownContent_element, page_element;
+    let process_id, process_name, subsheet_list, subsheet_id, subsheet_name, dropdownContent_element, page_element;
         
     // storing the name, id and subsheet list
-    process_id = data[i].id;
-    process_name = data[i].name;
-    subsheet_list = data[i].child_process.subsheet_list;
+    process_id = data[0].id;
+    process_name = data[0].name;
+    subsheet_list = data[0].child_process.subsheet_list;
 
     // dropdown content parent
     dropdownContent_element = $('<div>');
@@ -203,7 +202,6 @@ function build_dropdown_content(data){
     // append the dropdown content
     $('.process').filter('#' + process_id).append(dropdownContent_element);
     $('.process').filter('#' + process_id).find('.dropdownContent').stop().slideDown();
-  };
 };
 
 // remove all stages
@@ -222,8 +220,7 @@ function edit_path(page_id, name, index = ''){
     // updating the list
     if (index == ''){
       // adding new list-item
-      var path_page = {'id' : page_id, 'name' : name};
-      global_path.push(path_page);
+      global_path.push({'id' : page_id, 'name' : name});
     } else {
       // removing all list items after index
       global_path.length = parseInt(index) + 1;
@@ -235,7 +232,7 @@ function edit_path(page_id, name, index = ''){
 // draw the path
 function draw_path(){
     // variables
-    var path_div, btn_element, i;
+    let path_div, btn_element, i;
     // empty the entire path-element
     path_div = $('#path');
     path_div.empty();
@@ -268,7 +265,7 @@ function draw_path(){
 
 // draw an svg path from given start and end coordinates
 function draw_line(x1, y1, x2, y2){
-  var line, midX, midY;
+  let line, midX, midY;
   midX = (x1 + x2)/2
   midY = (y1 + y2)/2
   
@@ -285,11 +282,11 @@ function draw_line(x1, y1, x2, y2){
 function draw_all_lines(){
   $('svg').find('path').filter('#line').remove();
 
-  var start_x, start_y, end_x, end_y;
+  let start_x, start_y, end_x, end_y, center_x, center_y;
 
   // get the size of section element
-  var center_x = $('svg').outerWidth() / 2;
-  var center_y = $('svg').outerHeight() / 2;
+  center_x = $('svg').outerWidth() / 2;
+  center_y = $('svg').outerHeight() / 2;
 
   $('.stage').each((i, start_element) => {
     if ($(start_element).attr('onsuccess') || $(start_element).attr('ontrue') || $(start_element).attr('onfalse')){
@@ -309,7 +306,7 @@ function draw_all_lines(){
 // toggle the search filter in the html
 function toggle_filter(){
   // declearing variables
-  var marginTop, input, inputDiv, button;
+  let marginTop, input, inputDiv, button;
 
   // getting the html elements
   marginTop = $('#marginTop');
@@ -338,10 +335,11 @@ function toggle_filter(){
 
 // filter the processes in the margin
 function search(){
-  var search = $('#searchInput').val().toLowerCase();
+  let search, name;
+  search = $('#searchInput').val().toLowerCase();
 
-  var process = $('.process').each((i, element) => {
-    var name = $(element).find('.processButton').text();
+  $('.process').each((i, element) => {
+    name = $(element).find('.processButton').text();
     if (name.indexOf(search) != -1){
       $(element).stop().show();
     } else {
@@ -352,17 +350,18 @@ function search(){
 
 // hover effect on the stages
 function hover_effect(){
+  let stage, hover;
   $('.stage').mouseenter(function() {
-    var stage = $(this);
+    stage = $(this);
     clearTimeout(hoverTimeout);
     hoverTimeout = setTimeout(function(){
-      var hover = $('#displayCenterProcess').find('.hover').filter('#' + stage.attr('id'));
+      hover = $('#displayCenterProcess').find('.hover').filter('#' + stage.attr('id'));
       hover.addClass('showHover').stop().slideDown(200);
     }, 1000);
   });
   $('.stage').mouseleave(function() {
     clearTimeout(hoverTimeout);
-    var hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
+    hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
     hover.removeClass('showHover').stop().slideUp(100);
   });
   $('.hover').mouseenter(function() {
@@ -376,7 +375,8 @@ function hover_effect(){
 //---------------------- Draw Pages -----------------------
 function draw_main_page(){
     // variables
-    var child_process, stage_list, stage, i, dimensions, display, svg;
+    let child_process, stage_list, stage, i;
+
     child_process = displayed_process.child_process;
     stage_list = child_process.stage_list;
 
@@ -424,7 +424,7 @@ function draw_main_page(){
   
 function draw_subsheet(subsheet_id){
     // variables
-    var name, stage_list, stage, subsheet_list, i;
+    let name, stage_list, stage, subsheet_list, i;
   
     // find the subsheet
     subsheet_list = displayed_process.child_process.subsheet_list
@@ -483,7 +483,8 @@ function draw_subsheet(subsheet_id){
 
 //---------------------- Draw Stages ----------------------
 function draw_default_stage(stage){
-    var btn, hover, hover_x, hover_y, hover_btn, hover_type;
+    let btn, hover, hover_x, hover_y, hover_btn, hover_type;
+
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -534,7 +535,8 @@ function draw_default_stage(stage){
 };
   
 function draw_start_end(stage){
-    var btn;
+    let btn, hover_x, hover_y, hover_type, hover_btn, hover;
+
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -598,7 +600,8 @@ function draw_anchor(stage){
 };
   
 function draw_stage_subsheet(stage){
-    var btn;
+    let btn, hover_x, hover_y, hover_type, hover_btn, hover;
+
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -654,7 +657,8 @@ function draw_stage_subsheet_info(stage){
 };
   
 function draw_stage_process_info(stage){
-    var btn;
+    let btn, hover_x, hover_y, hover_type, hover_btn, hover, p_element;
+
     btn = $('<div>');
     btn.attr({
       'class' : 'stage',
@@ -673,7 +677,26 @@ function draw_stage_process_info(stage){
       'z-index' : 0,
       'font-size' : 12,
     });
-    btn.append(stage.name);
+
+    p_element = $('<p>');
+    p_element.css({
+      'border-bottom' : '1px solid black',
+    }).append(file_info.name);
+    btn.append(p_element);
+
+    p_element = $('<p>');
+    p_element.append(displayed_process.child_process.narrative);
+    btn.append(p_element);
+
+    p_element = $('<p>');
+    p_element.css({
+      'position' : 'absolute',
+      'bottom' : '0',
+      'left' : '0',
+      'border-top' : '1px solid black',
+    }).append('Created: ' + file_info.user_created_by + ', at ' + file_info.created);
+    btn.append(p_element);
+
     $('#displayCenterProcess').append(btn);
 
     hover_x = $('#' + stage.id).position().left;
@@ -706,7 +729,8 @@ function draw_stage_process(stage){
 };
   
 function draw_decision(stage){
-    var btn;
+    let btn, hover_x, hover_y, hover_type, hover_btn, hover;
+
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -803,7 +827,8 @@ function draw_multiple_calculation(stage){
 };
   
 function draw_block(stage){
-    var btn;
+    let btn, hover_x, hover_y, hover_type, hover_btn, hover, onsuccess_element;
+    
     btn = $('<div>');
     btn.attr({
       'class' : 'stage',
@@ -829,11 +854,15 @@ function draw_block(stage){
     hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
 
     hover_type = $('<p>');
-    hover_type.append(stage.type);
+    hover_type.attr('class', 'stageType').append(stage.type);
+
+    onsuccess_element = $('<p>');
+    onsuccess_element.attr('id', 'onsuccess').append('Onsuccess: ' + stage.onsuccess).hide();
 
     hover_btn = $('<button>');
     hover_btn.attr({
-
+      'class' : 'expandButton',
+      'onclick' : 'toggle_expand_hover("' + stage.id + '")',
     }).css({
       
     }).append('More...');
@@ -845,13 +874,14 @@ function draw_block(stage){
     }).css({
       'top' : hover_y + 'px',
       'left' : hover_x + 'px',
-    }).append(hover_type, hover_btn);
+    }).append(hover_type, onsuccess_element, hover_btn);
 
     $('#displayCenterProcess').append(hover);
 };
   
 function draw_collection(stage){
-    var btn;
+    let btn, stage_name, hover_x, hover_y, hover_type, hover_element, hover_btn;
+
     btn = $('<button>');
     btn.attr({
       'class' : 'stage',
@@ -871,7 +901,7 @@ function draw_collection(stage){
       'font-size' : 12,
     });
   
-    var stage_name = $('<p>');
+    stage_name = $('<p>');
     stage_name.attr({
       'class' : 'stageName',
     }).css({
@@ -886,17 +916,15 @@ function draw_collection(stage){
     hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
 
     hover_type = $('<p>');
-    hover_type.append(stage.type);
+    hover_type.attr('class', 'stageType').append(stage.type);
 
     hover_btn = $('<button>');
     hover_btn.attr({
-
-    }).css({
-      
+      'onclick' : 'toggle_expand_hover("' + stage.id + '")',
     }).append('More...');
 
-    hover = $('<div>');
-    hover.attr({
+    hover_element = $('<div>');
+    hover_element.attr({
       'class' : 'hover',
       'id' : stage.id,
     }).css({
@@ -904,9 +932,26 @@ function draw_collection(stage){
       'left' : hover_x + 'px',
     }).append(hover_type, hover_btn);
 
-    $('#displayCenterProcess').append(hover);
+    $('#displayCenterProcess').append(hover_element);
 };
-  
+
 function draw_stage_page(stage){
     draw_default_stage(stage);
+};
+
+function toggle_expand_hover(stage_id){
+  var hover_element;
+  hover_element = $('.hover').filter('#' + stage_id);
+  if (hover_element.hasClass('expanded')){
+    // hide all, and show selected elements inside hover
+    hover_element.find('*').hide();
+    hover_element.find('.stageType').show();
+    hover_element.find('.expandButton').show().empty().append('More...');
+  } else {
+    // show all elements inside hover
+    hover_element.find('*').show();
+    hover_element.find('.expandButton').empty().append('Less...');
+  }
+  // resize the hover element
+  hover_element.css('height', 'fit-content').toggleClass('expanded');
 };

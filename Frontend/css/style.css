@@ -245,6 +245,9 @@ section{
     border: 1px solid black;
     cursor: pointer;
 }
+[stage_type = ProcessInfo] p{
+    overflow: hidden;
+}
 .hover{
     position: absolute;
     background-color: #e3e1db;

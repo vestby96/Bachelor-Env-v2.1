@@ -35,6 +35,15 @@ def analyze_and_filter(xml_string: str):
     # return list with all info
     parent_process_list = []
     
+    process_file_info = {
+        'name' : str(root.find('bpr:name', ns).text),
+        'release_notes' : str(root.find('bpr:release-notes', ns).text),
+        'created' : str(root.find('bpr:created', ns).text),
+        'package_id' : str(root.find('bpr:package-id', ns).text),
+        'package_name' : str(root.find('bpr:package-name', ns).text),
+        'user_created_by' : str(root.find('bpr:user-created-by', ns).text),
+    }
+    
     # select the process elements
     for process in root.findall(".//proc:process", ns):
         # handeling the parent processes
@@ -234,7 +243,7 @@ def analyze_and_filter(xml_string: str):
                 if loginhibit_element is not None:
                     stage_dict['loginhibit'] = loginhibit_element.get('onsuccess')
                 
-                # group
+                # group id
                 groupid_element = stage.find('proc:groupid', ns)
                 if groupid_element is not None:
                     stage_dict['groupid'] = str(groupid_element.text)
@@ -325,6 +334,7 @@ def analyze_and_filter(xml_string: str):
                     # saving the child process as a dict in the parent process dict
                     parent['child_process'] = process_dict
     
+    parent_process_list.append(process_file_info)
     print('- Analyzed: ' + str(parent_process_list[0]['name']))
     return parent_process_list
 
