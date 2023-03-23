@@ -65,3 +65,7 @@ insert_to_db_sens('test process', xml_string)
 f = open("/code/init_db/test.xml", "r")
 xml_string = f.read()
 insert_to_db_sens('test process 2', xml_string)
+
+f = open("/code/init_db/rotete-prosess.xml", "r")
+xml_string = f.read()
+insert_to_db_sens('Rotete prosess', xml_string)

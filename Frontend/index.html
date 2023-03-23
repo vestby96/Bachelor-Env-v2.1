@@ -25,7 +25,7 @@
                 <div onclick="toggle_filter()"></div>
             </div>
             <div id="searchDiv">
-                <input id="searchInput" onkeyup="search()" placeholder="Search...">
+                <input id="searchInput" autocomplete="off" onkeyup="search()" placeholder="Search...">
             </div>
         </div>
 
@@ -50,6 +50,7 @@
                 </svg>
                 <div id="displayCenterProcess"></div>
             </div>
+            <input type="range" id="zoomSlider" min="0" max="20" onchange="zoom_func()">
         </div>
     </section>
 </body>
