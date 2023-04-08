@@ -1,386 +1,317 @@
 // global variables
-var global_path, process_short_list, displayed_object, displayed_process, file_info, ip, port, customer_name, hoverTimeout;
-
+var global_path, process_short_list, full_process_list, displayed_object, displayed_process, process_info, ip, port, customer, hoverTimeout;
+global_path = [{'id': '0', 'name' : 'Main Page'}];
 ip = 'localhost';
 port = '8000';
-customer_name = 'customer';
+customer = 'customer';
 
 $(document).ready(() => {
   // run initial functions
+  build_left_process();
   path_scroll();
-  get_process_short_list();
+  //draw_line_using_angles({'x': 0, 'y': 0, 'w': 20}, {'x': -100, 'y': -100});
 
   // some functions are effected by the width of the window
   $(window).resize(() => {
-    draw_all_lines();
+    // error when resizeing window, and when toggling the margin
+    //draw_all_lines();
     path_scroll();
   });
 });
 
-// function to get the short list of process data
-function get_process_short_list(){
-  $.ajax({
-    type: 'GET',
-    url: 'http://' + ip + ':' + port + '/' + customer_name + '/',
-    dataType: 'json',
-    success: function(data){
-      process_short_list = data;
-      build_margin(data);
-    },
-    error(e){
-      alert(e);
-    }
+// get the short list of process data
+function get_short_list(){
+  return new Promise(function(resolve, reject){
+    $.ajax({
+      type: 'GET',
+      url: 'http://' + ip + ':' + port + '/' + customer + '/',
+      dataType: 'json',
+      success: function(data){
+        process_short_list = data;
+        resolve(data);
+      },
+      error(e){
+        reject(e);
+      }
+    });
   });
 };
 
-// function to get the full info list of a given process id
-function get_full_process(process_id, purpose = '', page_id = ''){
-  $.ajax({
-    type: 'GET',
-    url: 'http://' + ip + ':' + port + '/' + customer_name + '/' + process_id,
-    dataType: 'json',
-    success:(data) => {
-      if (purpose == '' && page_id == ''){
-        // if only process id i given, the dropdown content will be built
-        build_dropdown_content(data);
-      } else if (purpose == 'mainPage' && page_id == ''){
-        // if the purpose says main page, the main page will be drawn
-        displayed_process = data[0];
-        file_info = data[1];
-        draw_main_page();
-      } else if ( purpose == '' && page_id != ''){
-        // if a page id is given, the given page will be drawn
-        displayed_process = data[0];
-        file_info = data[1];
-        draw_subsheet(page_id);
-      };
-    },
-    error(e){
-      // catch error
-      alert(e);
-    }
+// get the full info list of a given process
+function get_full_process_list(process_id){
+  return new Promise(function(resolve, reject){
+    $.ajax({
+      type: 'GET',
+      url: 'http://' + ip + ':' + port + '/' + customer + '/' + process_id,
+      dataType: 'json',
+      success: function(data){
+        resolve(data);
+      },
+      error(e){
+        reject(e);
+      }
+    });
   });
 };
 
-// horizontal scroll for the path
-function path_scroll(){
-  let element, length, position;
-  element = $('#path');
-  length = element.prop('scrollWidth') - element.outerWidth();
-  position = 0;
-  element.bind('wheel', (e) => {
-    if (position <= length && position >= 0) {
-      if (e.originalEvent.wheelDelta / 120 > 0) {
-        position -= 20;
-        element.scrollLeft(position);
-      } else {
-        position += 20;
-        element.scrollLeft(position);
-      };
-    } else if (position > length){
-      position = length - 20;
-    } else if (position < 0){
-      position = 0 + 20;
-    };
-  });
-  element.scroll(() => {
-    position = element.scrollLeft();
-  });
-};
+//------------------ Handle the processes -------------------
+// display the list of processes in the left element
+async function build_left_process(){
+  // wait for api response
+  await get_short_list();
 
-// input a short list of process ids and names and add them to the margin
-function build_margin(short_list){
-  let process_element, buttons_element, processButton_element, process_p, dropdownButton_element, dropdown_p, id, name, i;
-  for (i = 0; i < short_list.length; i++){
-    id = short_list[i].id;
-    name = short_list[i].name;
+  // varliables
+  let processParent, title, div, button, icon, process, i;
 
-    process_p = $('<p>');
-    process_p.append(name);
+  for (i = 0; i < process_short_list.length; i++){  
+    process = process_short_list[i];
+    processParent = $('<div>');
+    div = $('<div>');
+    title = $('<h3>');
+    button = $('<button>');
+    icon = $('<p>');
 
-    dropdown_p = $('<p>');
-
-    dropdownButton_element = $('<button>');
-    dropdownButton_element.attr({
+    title.attr({
+      'onclick' : 'select_process("' + process.id + '")',
+      'title' : 'Display process',
+    }).append(process.name);
+    button.attr({
       'class' : 'dropdownButton',
-      'id' : id,
-      'onclick' : 'toggle_dropdown("' + id + '")',
-    }).append(dropdown_p);
-
-    processButton_element = $('<button>');
-    processButton_element.attr({
-      'class' : 'processButton showProcess',
-      'id' : id,
-      'onclick' : 'get_full_process("' + id + '", "mainPage")',
-    }).append(process_p);
-
-    buttons_element = $('<div>');
-    buttons_element.attr({
-      'class' : 'buttons',
-      'id' : id,
-      'onclick' : '',
-    }).append(processButton_element, dropdownButton_element);
-
-    process_element = $('<div>');
-    process_element.attr({
-      'class' : 'process',
-      'id' : id,
-    }).append(buttons_element);
-
-    $('#margin').append(process_element);
+      'onclick' : 'toggle_dropdown_content("' + process.id + '")',
+      'title' : 'List process content',
+    }).append(icon);
+    div.attr({
+      'class' : 'processTop',
+    }).append(title, button);
+    processParent.attr({
+      'class' : 'processParent',
+      'id' : process.id,
+    }).append(div);
+    $('#leftBottom').append(processParent);
   };
 };
 
-// toggle the dropdown content in the margin of a given process
-function toggle_dropdown(process_id){
-  var process, button, content, dropdownTimeout;
-  
-  process = $('.process').filter('#' + process_id);
-  button = process.find('.dropdownButton');
-  content = process.find('.dropdownContent');
+// get full process
+async function select_process(process_id, subsheet_id = ''){
+  try {
+      // wait for api response
+      full_process_list = await get_full_process_list(process_id);
 
-  button.toggleClass('open');
-  process.toggleClass('openProcess');
-  
-  if (content.hasClass('dropdownContent')){
-    content.stop().slideUp(500);
-    clearTimeout(dropdownTimeout);
-    dropdownTimeout = setTimeout(() => {
-      content.remove();
-    }, 500);
-  } else {
-    get_full_process(process_id);
+      // save the process globally
+      displayed_process = full_process_list[0];
+      process_info = full_process_list[1];
+      //displayed_object = full_process_list[2];
+
+      console.log(displayed_process);
+
+      // make the process 'selected' in the margin
+      let processes, process;
+      processes = $('.processParent');
+      processes.removeClass('selected');
+      process = $('#' + process_id);
+      process.addClass('selected');
+
+      if (subsheet_id == ''){
+        // draw main page
+        draw_main_page();
+      } else {
+        // draw subsheet
+        draw_subsheet(subsheet_id);
+      };
+
+      // return success
+      return('success');
+  } catch {
+    // return error
+      return('error in selection of process');
   };
 };
 
 // get the the main page and all subsheets of a given process and add them to the margin
-function build_dropdown_content(data){
-    let j;
-  
+async function toggle_dropdown_content(process_id){
+  let parent, p, local_process;
+  parent = $('#' + process_id);
+  p = parent.find('.dropdownButton p');
+  // checking if the content is displayed
+  if (!parent.hasClass('open')){
+    // wait for api response
+    local_process =  await get_full_process_list(process_id);
     // variables
-    let process_id, process_name, subsheet_list, subsheet_id, subsheet_name, dropdownContent_element, page_element;
-        
-    // storing the name, id and subsheet list
-    process_id = data[0].id;
-    process_name = data[0].name;
-    subsheet_list = data[0].child_process.subsheet_list;
+    let div, title, subsheet_list, subsheet, i;
 
-    // dropdown content parent
-    dropdownContent_element = $('<div>');
-    dropdownContent_element.attr({
+    subsheet_list = local_process[0].child_process.subsheet_list;
+    div = $('<div>');
+    div.attr({
       'class' : 'dropdownContent',
-      'id' : process_id,
-    });
-
+    }).hide();
     // main page
-    page_element = $('<input>');
-    page_element.attr({
-      'class' : 'page',
-      'id' : '0',
-      'type' : 'submit',
-      'value' : 'Main Page',
-      'onclick' : 'empty_path();get_full_process("' + process_id + '", "mainPage")',
-    });
-    dropdownContent_element.append(page_element).stop().hide();
-    
-    // loop through subsheets
-    for (j = 0; j < subsheet_list.length; j++){
-      subsheet_id = subsheet_list[j].id;
-      subsheet_name = subsheet_list[j].name;
-
-      page_element = $('<input>');
-      page_element.attr({
-        'class' : 'page',
-        'id' : subsheet_id,
-        'type' : 'button',
-        'value' : subsheet_name,
-        'onclick' : 'empty_path();get_full_process("' + process_id + '", "", "' + subsheet_id + '")',
-      });
-      dropdownContent_element.append(page_element);
+    title = $('<h4>');
+    title.attr({
+      'onclick' : 'empty_path();select_process("' + process_id + '")',
+    }).append('Main Page');
+    div.append(title);
+    // loop gjennom subsheets
+    for (i = 0; i < subsheet_list.length; i++){
+      subsheet = subsheet_list[i];
+      title = $('<h4>');
+      title.attr({
+        'onclick' : 'empty_path();select_process("' + process_id + '","' + subsheet.id + '")',
+      }).append(subsheet.name);
+      div.append(title);
     };
-
-    // append the dropdown content
-    $('.process').filter('#' + process_id).append(dropdownContent_element);
-    $('.process').filter('#' + process_id).find('.dropdownContent').stop().slideDown();
+    parent.append(div);
+    // slide down the content
+    p.css('transform', 'rotate(180deg)');
+    parent.find('.dropdownContent').slideDown(200);
+  } else {
+    // slide up the content
+    p.css('transform', 'rotate(90deg)');
+    parent.find('.dropdownContent').slideUp(200);
+    // wait for the animation to end before removing the content
+    setTimeout(function(){
+      parent.find('.dropdownContent').remove();
+    }, 250);
+  };
+  // toggle the flex
+  parent.toggleClass('open');
 };
 
-// remove all stages
-function empty_page(){
-    $('#displayCenterProcess').empty();
-};
-
-// empty and reset the path
-function empty_path(){
-    global_path = [{'id': '0', 'name' : 'Main Page'}];
-    $('#path').empty();
-};
-
-// add or remove items in the path
-function edit_path(page_id, name, index = ''){
-    // updating the list
-    if (index == ''){
-      // adding new list-item
-      global_path.push({'id' : page_id, 'name' : name});
-    } else {
-      // removing all list items after index
-      global_path.length = parseInt(index) + 1;
-    };
-    // last draw the new path
-    draw_path();
-};
-
-// draw the path
-function draw_path(){
-    // variables
-    let path_div, btn_element, i;
-    // empty the entire path-element
-    path_div = $('#path');
-    path_div.empty();
-  
-    // loop through the path list
-    for (i = 0; i < global_path.length - 1; i++){
-      // create a button for each entry
-      btn_element = $('<button>');
-      btn_element.attr({
-        'class' : 'pathButton',
-      });
-      
-      // if the id of the page is 0 it is the main page
-      if (global_path[i].id == '0'){
-        btn_element.attr({
-          'onclick' : 'edit_path("", ""," ' + i + '"); draw_main_page()',
-        });
-      } else {
-        btn_element.attr({
-          'onclick' : 'edit_path("", "", "' + (i - 1) + '"); draw_subsheet("' + global_path[i].id + '")',
-        });
-      }
-      btn_element.text('/' + global_path[i].name);
-      path_div.append(btn_element);
-    };
-
-    // adding the current page to the label
-    $('#pageLabel').empty().append(global_path[global_path.length - 1].name);
-};
-
+//---------------------- SVG -----------------------
 // draw an svg path from given start and end coordinates
-function draw_line(x1, y1, x2, y2){
+function draw_line(x1, y1, x2, y2, arrow = true, id = null){
   let line, midX, midY;
   midX = (x1 + x2)/2
   midY = (y1 + y2)/2
   
   line = document.createElementNS('http://www.w3.org/2000/svg','path');
-  line.setAttribute('id','line');
+  line.setAttribute('class','line');
   line.setAttribute('d', "M " + x1 + " " + y1 + " L " + midX + " " + midY + " L " + x2 + " " + y2);
   line.setAttribute('stroke', 'black');
   line.setAttribute('stroke-width', '1px');
-  line.setAttribute('marker-mid', 'url(#arrow)');
+  if (arrow === true){
+    line.setAttribute('marker-mid', 'url(#arrow)');
+  };
+  if (id !== null){
+    line.setAttribute('id', id);
+  };
   $('svg').append(line);
+  return line;
+};
+
+function draw_choice_lines(){
+  let start, end, start_x, start_y, end_x, end_y, center_x, center_y;
+
+  // get the size of svg element
+  center_x = $('svg').outerWidth() / 2;
+  center_y = $('svg').outerHeight() / 2;
+
+  $('[stage_type=Choice]').each((i, start_element) => {
+    start = $(start_element);
+    end = $('.stage').filter('[id=' + start.attr('ontrue') + ']');
+    start_x = start.position().left + start.outerWidth()/2 + center_x;
+    start_y = start.position().top + start.outerHeight()/2 + center_y;
+    end_x = end.position().left + end.outerWidth()/2 + center_x;
+    end_y = end.position().top + end.outerHeight()/2 + center_y;
+    draw_line(start_x, start_y, end_x, end_y);
+  });
 };
 
 // get the positions of all stages with onsucces and draw lines from start to end stage
-function draw_all_lines(){
-  $('svg').find('path').filter('#line').remove();
+function draw_all_lines(remove_all = false){
+  if (remove_all === true){
+    $('svg').find('path').filter('.line').remove();
+  } else {
+    $('svg').find('path').filter('.line').filter(':not([id])').remove();
+  };
 
-  let start_x, start_y, end_x, end_y, center_x, center_y;
+  let start, end, start_x, start_y, end_x, end_y, center_x, center_y;
 
-  // get the size of section element
+  // get the size of svg element
   center_x = $('svg').outerWidth() / 2;
   center_y = $('svg').outerHeight() / 2;
 
   $('.stage').each((i, start_element) => {
-    if ($(start_element).attr('onsuccess') || $(start_element).attr('ontrue') || $(start_element).attr('onfalse')){
+    start = $(start_element);
+    if (start.attr('onsuccess') !== undefined || start.attr('ontrue') !== undefined || start.attr('onfalse') !== undefined){
       $('.stage').each((j, end_element) => {
-        if ($(start_element).attr('onsuccess') == $(end_element).attr('id') || $(start_element).attr('ontrue') == $(end_element).attr('id') || $(start_element).attr('onfalse') == $(end_element).attr('id')){
-          start_x = $(start_element).position().left + $(start_element).outerWidth()/2 + center_x;
-          start_y = $(start_element).position().top + $(start_element).outerHeight()/2 + center_y;
-          end_x = $(end_element).position().left + $(end_element).outerWidth()/2 + center_x;
-          end_y = $(end_element).position().top + $(end_element).outerHeight()/2 + center_y;
+        end = $(end_element);
+        if (start.attr('onsuccess') === end.attr('id') || start.attr('ontrue') === end.attr('id') || start.attr('onfalse') === end.attr('id')){
+          start_x = start.position().left + start.outerWidth()/2 + center_x;
+          start_y = start.position().top + start.outerHeight()/2 + center_y;
+          end_x = end.position().left + end.outerWidth()/2 + center_x;
+          end_y = end.position().top + end.outerHeight()/2 + center_y;
           draw_line(start_x, start_y, end_x, end_y);
         };
       });
     };
+    // handle choice start/end paths
+    $('[stage_type=ChoiceStart]').each((i, start_element) => {
+      start = $(start_element);
+      end = $('[stage_type=ChoiceEnd]').filter('[groupid=' + start.attr('groupid') + ']');
+      start_x = start.position().left + start.outerWidth()/2 + center_x;
+      start_y = start.position().top + start.outerHeight()/2 + center_y;
+      end_x = end.position().left + end.outerWidth()/2 + center_x;
+      end_y = end.position().top + end.outerHeight()/2 + center_y;
+      draw_line(start_x, start_y, end_x, end_y, false, start.attr('id'));
+    });
   });
 };
 
-// toggle the search filter in the html
-function toggle_filter(){
-  // declearing variables
-  let marginTop, input, inputDiv, button;
-
-  // getting the html elements
-  marginTop = $('#marginTop');
-  button = $('#marginTop div');
-  input = $('#searchInput');
-  inputDiv = $('#searchDiv');
-
-  if (input.hasClass('openSearch')){
-    // hide the search input
-    button.css({
-      'transform' : 'scaleX(-1) translate(50%, -50%)',
-    });
-    input.val('');
-    search();
-  } else {
-    // show the search input
-    button.css({
-      'transform' : 'scaleX(1) translate(-50%, -50%)',
-    });
-    input.focus();
+// draw line from edge of element
+function draw_line_using_angles(start, end){
+  let angle, outer_side, inner_side_start;
+  
+  outer_side = {
+    'a': Math.abs(start.y - end.y),
+    'b': Math.abs(start.x - end.x),
   };
+  outer_side.c = Math.sqrt(outer_side.a*outer_side.a + outer_side.b*outer_side.b);
 
-  // toggle the search class
-  input.toggleClass('openSearch');
-  inputDiv.toggleClass('openSearchDiv');
-};
+  angle = {
+    'a': Math.asin(outer_side.a/outer_side.c) * (180/Math.PI),
+    'c': 90,
+  };
+  angle.b = angle.c - angle.a;
 
-// filter the processes in the margin
-function search(){
-  let search, name;
-  search = $('#searchInput').val().toLowerCase();
+  inner_side_start = {
+    'b': start.w/2,
+  };
+  inner_side_start.c = inner_side_start.b/Math.sin(angle.b * (Math.PI/180));
+  inner_side_start.a = Math.sqrt(inner_side_start.c*inner_side_start.c - inner_side_start.b*inner_side_start.b);
 
-  $('.process').each((i, element) => {
-    name = $(element).find('.processButton').text();
-    if (name.indexOf(search) != -1){
-      $(element).stop().show();
-    } else {
-      $(element).stop().hide();
-    };
-  });
-};
+  console.log('A=' + angle.a + ': B=' + angle.b + ': C=' + angle.c);
+  console.log('a=' + outer_side.a + ': b=' + outer_side.b + ': c=' + outer_side.c);
+  console.log('a=' + inner_side_start.a + ': b=' + inner_side_start.b + ': c=' + inner_side_start.c);
 
-// hover effect on the stages
-function hover_effect(){
-  let stage, hover;
-  $('.stage').mouseenter(function() {
-    stage = $(this);
-    clearTimeout(hoverTimeout);
-    hoverTimeout = setTimeout(function(){
-      hover = $('#displayCenterProcess').find('.hover').filter('#' + stage.attr('id'));
-      hover.addClass('showHover').stop().slideDown(200);
-    }, 1000);
-  });
-  $('.stage').mouseleave(function() {
-    clearTimeout(hoverTimeout);
-    hover = $('#displayCenterProcess').find('.hover').filter('#' + $(this).attr('id'));
-    hover.removeClass('showHover').stop().slideUp(100);
-  });
-  $('.hover').mouseenter(function() {
-    $(this).addClass('showHover').stop().slideDown(200);
-  });
-  $('.hover').mouseleave(function() {
-    $(this).removeClass('showHover').stop().slideUp(100);
-  });
-};
+  if (start.x > end.x && start.y > end.y){
+    console.log('up left');
+  } else if (start.x < end.x && start.y > end.y){
+    console.log('up right');
+  } else if (start.x > end.x && start.y < end.y){
+    console.log('down left');
+  } else if (start.x < end.x && start.y < end.y){
+    console.log('down right');
+  } else if (start.x === end.x && start.y > end.y){
+    console.log('straight up');
+  } else if (start.x === end.x && start.y < end.y){
+    console.log('straight down');
+  } else if (start.x > end.x && start.y === end.y){
+    console.log('straight left');
+  } else if (start.x < end.x && start.y === end.y){
+    console.log('straight right');
+  };
+}
 
 //---------------------- Draw Pages -----------------------
 function draw_main_page(scale = 1){
     // variables
-    let child_process, stage_list, stage, i;
+    let stage_list, stage, i, choices;
+    choices = {
+      'items': new Array,
+      'ids': new Array,
+    };
 
-    child_process = displayed_process.child_process;
-    stage_list = child_process.stage_list;
-
+    stage_list = displayed_process.child_process.stage_list;
     // draw the initial path
     empty_path();
     draw_path();
@@ -389,51 +320,45 @@ function draw_main_page(scale = 1){
     //draw stages
     for (i = 0; i < stage_list.length; i++){
       stage = stage_list[i];
+
       if (!stage.subsheet_id && stage.type == 'Block'){
         draw_block(stage, scale);
-      } else if (!stage.subsheet_id && (stage.type == 'Start' || stage.type == 'End')){
-        draw_start_end(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'SubSheet'){
-        draw_stage_subsheet(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'SubSheetInfo'){
-        draw_stage_subsheet_info(stage, scale);
+      } else if (!stage.subsheet_id && stage.type == 'ChoiceStart'){
+        choices.ids.push(stage.id);
+        choices.items.push(stage.choices);
+        draw_stage(stage, scale);
       } else if (!stage.subsheet_id && stage.type == 'ProcessInfo'){
-        draw_stage_process_info(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Decision'){
-        draw_decision(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Exception'){
-        draw_exception(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Action'){
-        draw_action(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Calculation'){
-        draw_calculation(stage, scale);
+        draw_process_info(stage, scale);
+      } else if (!stage.subsheet_id && stage.type == 'SubSheetInfo'){
+        draw_subsheet_info(stage, scale);
       } else if (!stage.subsheet_id && stage.type == 'Collection'){
         draw_collection(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Data'){
-        draw_data(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'LoopStart'){
-        draw_loop_start(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'LoopEnd'){
-        draw_loop_end(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'MultipleCalculation'){
-        draw_multiple_calculation(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Anchor'){
-        draw_anchor(stage, scale);
       } else if (!stage.subsheet_id){
-        draw_default_stage(stage, scale);
+        draw_stage(stage, scale);
       };
     };
-    size_page();
-    draw_all_lines();
+
+    auto_inc_page();
+    draw_all_lines(true);
     hover_effect();
+    if (choices.ids.length > 0){
+      for (i = 0; i < choices.ids.length; i++){
+        draw_choices(choices.ids[i], choices.items[i], scale);
+      };
+    };
 };
   
 function draw_subsheet(subsheet_id, scale = 1){
     // variables
-    let name, stage_list, stage, subsheet_list, i;
+    let name, stage_list, stage, subsheet_list, i, choices;
+    
+    choices = {
+      'items': new Array,
+      'ids': new Array,
+    };
   
     // find the subsheet
-    subsheet_list = displayed_process.child_process.subsheet_list
+    subsheet_list = displayed_process.child_process.subsheet_list;
     name = 'Undefined';
     for (i = 0; i < subsheet_list.length; i++){
       if (subsheet_id == subsheet_list[i].id){
@@ -455,357 +380,201 @@ function draw_subsheet(subsheet_id, scale = 1){
       stage = stage_list[i];
       if (stage.subsheet_id == subsheet_id && stage.type == 'Block'){
         draw_block(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && (stage.type == 'Start' || stage.type == 'End')){
-        draw_start_end(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'SubSheet'){
-        draw_stage_subsheet(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'SubSheetInfo'){
-        draw_stage_subsheet_info(stage, scale);
+      } else if (stage.subsheet_id == subsheet_id && stage.type == 'ChoiceStart'){
+        choices.ids.push(stage.id);
+        choices.items.push(stage.choices);
+        draw_stage(stage, scale);
       } else if (stage.subsheet_id == subsheet_id && stage.type == 'ProcessInfo'){
-        draw_stage_process_info(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Decision'){
-        draw_decision(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Exception'){
-        draw_exception(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Action'){
-        draw_action(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Calculation'){
-        draw_calculation(stage, scale);
+        draw_process_info(stage, scale);
+      } else if (stage.subsheet_id == subsheet_id && stage.type == 'SubSheetInfo'){
+        draw_subsheet_info(stage, scale);
       } else if (stage.subsheet_id == subsheet_id && stage.type == 'Collection'){
         draw_collection(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Data'){
-        draw_data(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'LoopStart'){
-        draw_loop_start(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'LoopEnd'){
-        draw_loop_end(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'MultipleCalculation'){
-        draw_multiple_calculation(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Anchor'){
-        draw_anchor(stage, scale);
       } else if (stage.subsheet_id == subsheet_id){
-        draw_default_stage(stage, scale);
+        draw_stage(stage, scale);
       };
     };
-    size_page();
-    draw_all_lines();
+    
+    auto_inc_page();
+    draw_all_lines(true);
     hover_effect();
+    if (choices.ids.length > 0){
+      for (i = 0; i < choices.ids.length; i++){
+        draw_choices(choices.ids[i], choices.items[i], scale);
+      };
+    };
 };
 
 //---------------------- Draw Stages ----------------------
-function draw_default_stage(stage, scale){
-    let btn;
-    btn = $('<button>');
-    btn.attr({
-      'class' : 'stage',
-      'id' : stage.id,
-      'onsuccess' : stage.onsuccess,
-      'type' : 'button',
-      'stage_type' : stage.type,
-    }).css({
-      'display' : 'flex',
-      'align-items' : 'center',
-      'justify-content' : 'center',
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'background-color' : 'white',
-      'padding' : '10px',
-      'z-index' : 1,
-      'font-size' : 12,
-    }).append(stage.name);
-    $('#displayCenterProcess').append(btn);
+function draw_stage(stage, scale){
+  let element, p;
+  element = $('<div>');
 
-    draw_hover_element(stage);
-};
-  
-function draw_start_end(stage, scale){
-    let btn;
-    btn = $('<button>');
-    btn.attr({
-      'class' : 'stage',
-      'id' : stage.id,
-      'onsuccess' : stage.onsuccess,
-      'type' : 'button',
-      'stage_type' : stage.type,
-    }).css({
-      'display' : 'flex',
-      'align-items' : 'center',
-      'justify-content' : 'center',
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'background-color' : 'white',
-      'padding' : '10px',
-      'border-radius' : '25%',
-      'z-index' : 1,
-      'font-size' : 12,
-    }).append(stage.name);
-    $('#displayCenterProcess').append(btn);
+  p = $('<p>');
+  if (stage.type === 'Anchor'){
+    
+  } else if (stage.type === 'Note'){
+    p.append(stage.narrative);
+  } else {
+    p.append(stage.name)
+  };
 
-    draw_hover_element(stage);
-};
-  
-function draw_choice(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_note(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_anchor(stage, scale){
-  let btn;
-  btn = $('<button>');
-  btn.attr({
+  element.attr({
     'class' : 'stage',
     'id' : stage.id,
     'onsuccess' : stage.onsuccess,
-    'type' : 'button',
+    'ontrue' : stage.ontrue,
+    'onfalse' : stage.onfalse,
+    'groupid' : stage.groupid,
     'stage_type' : stage.type,
   }).css({
     'left' : parseInt(stage.x) * scale,
     'top' : parseInt(stage.y) * scale,
     'width' : parseInt(stage.w) * scale,
     'height' : parseInt(stage.h) * scale,
-    //'transform' : 'rotate(45deg)',
-    'background-color' : 'white',
-    'padding' : '5px',
-    'z-index' : 1,
-    'font-size' : 12,
-  });
-  $('#displayCenterProcess').append(btn);
+    'color' : stage.font_color,
+    'font-size' : parseInt(stage.font_size) * scale,
+  }).append(p);
+
+  if (stage.type === 'SubSheet'){
+    element.attr('onclick', 'draw_subsheet("' + stage.process_id + '")');
+  } else if (stage.type === 'Data'){
+    element.css({
+      'width' : element.outerWidth() * 0.8,
+      'height' : element.outerHeight() * 0.9,
+    });
+  };
+
+  $('#displayCenter').append(element);
 
   draw_hover_element(stage);
 };
+
+function draw_choices(id, choices, scale){
+  let i, path, point, element, center_x, center_y;
+  path = document.getElementById(id);
+
+  // get the size of svg element
+  center_x = $('svg').outerWidth() / 2;
+  center_y = $('svg').outerHeight() / 2;
+
+  if (path !== undefined){
+    for (i = 0; i < choices.length; i++){
+      point = {
+        'x': Math.round(path.getPointAtLength(choices[i].distance).x) - center_x,
+        'y': Math.round(path.getPointAtLength(parseInt(choices[i].distance)).y) - center_y,
+      };
+      element = $('<div>');
+      element.attr({
+        'class' : 'stage',
+        'ontrue' : choices[i].ontrue,
+        'stage_type' : 'Choice',
+      }).css({
+        'left' : point.x,
+        'top' : point.y,
+      });
+      $('#displayCenter').append(element);
+    };
+    draw_choice_lines();
+  } else {
+    console.log('Path not found');
+  };
+};
+
+function draw_subsheet_info(stage, scale){
+    draw_process_info(stage, scale);
+};
   
-function draw_stage_subsheet(stage, scale){
-    let btn;
-    btn = $('<button>');
-    btn.attr({
+function draw_process_info(stage, scale){
+    let element, p;
+    element = $('<div>');
+    element.attr({
       'class' : 'stage',
       'id' : stage.id,
       'onsuccess' : stage.onsuccess,
-      'type' : 'button',
       'stage_type' : stage.type,
-      'onclick' : 'draw_subsheet("' + stage.process_id + '")',
     }).css({
-      'display' : 'flex',
-      'align-items' : 'center',
-      'justify-content' : 'center',
       'left' : parseInt(stage.x) * scale,
       'top' : parseInt(stage.y) * scale,
       'width' : parseInt(stage.w) * scale,
       'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'background-color' : 'white',
-      'z-index' : 1,
-      'font-size' : 12,
-    });
-  
-    btn.append(stage.name);
-    $('#displayCenterProcess').append(btn);
-
-    draw_hover_element(stage);
-};
-  
-function draw_stage_subsheet_info(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_stage_process_info(stage, scale){
-    let btn, p_element;
-    btn = $('<div>');
-    btn.attr({
-      'class' : 'stage',
-      'id' : stage.id,
-      'onsuccess' : stage.onsuccess,
-      'type' : 'button',
-      'stage_type' : stage.type,
-    }).css({
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'background-color' : 'white',
-      'opacity' : 0.5,
-      'z-index' : 0,
-      'font-size' : 12,
     });
 
-    p_element = $('<p>');
-    p_element.css({
+    p = $('<p>');
+    p.css({
       'border-bottom' : '1px solid black',
       'padding' : '0 2px',
-    }).append(file_info.name);
-    btn.append(p_element);
+    }).append(process_info.name);
+    element.append(p);
 
-    p_element = $('<p>');
-    p_element.css({
+    p = $('<p>');
+    p.css({
       'padding' : '0 2px',
     }).append(displayed_process.child_process.narrative);
-    btn.append(p_element);
+    element.append(p);
 
-    p_element = $('<p>');
-    p_element.css({
+    p = $('<p>');
+    p.css({
       'position' : 'absolute',
       'bottom' : '0',
       'left' : '0',
       'border-top' : '1px solid black',
       'padding' : '0 2px',
-    }).append('Created: ' + file_info.user_created_by + ', at ' + file_info.created);
-    btn.append(p_element);
+    }).append('Created: ' + process_info.user_created_by + ', at ' + process_info.created);
+    element.append(p);
 
-    $('#displayCenterProcess').append(btn);
-
-    draw_hover_element(stage);
-};
-  
-function draw_stage_process(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_decision(stage, scale){
-    let btn;
-    btn = $('<button>');
-    btn.attr({
-      'class' : 'stage',
-      'id' : stage.id,
-      'onsuccess' : stage.onsuccess,
-      'ontrue' : stage.ontrue,
-      'onfalse' : stage.onfalse,
-      'type' : 'button',
-      'stage_type' : stage.type,
-    }).css({
-      'display' : 'flex',
-      'align-items' : 'center',
-      'justify-content' : 'center',
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'border' : 'none',
-      'background-color' : 'transparent',
-      'background-image' : 'url("./img/decision.png")',
-      'background-repeat' : 'no-repeat',
-      'background-size' : '100% 95%',
-      'background-position' : 'center',
-      'z-index' : 1,
-      'font-size' : 12,
-    }).append(stage.name);
-    $('#displayCenterProcess').append(btn);
+    $('#displayCenter').append(element);
 
     draw_hover_element(stage);
-};
-  
-function draw_exception(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_calculation(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_alert(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_recover(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_resume(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_loop_start(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_loop_end(stage, scale){
-    draw_default_stage(stage, scale);
-};
- 
-function draw_data(stage, scale){
-    draw_collection(stage, scale);
-};
-  
-function draw_action(stage, scale){
-    draw_default_stage(stage, scale);
-};
-  
-function draw_multiple_calculation(stage, scale){
-    draw_default_stage(stage, scale);
 };
   
 function draw_block(stage, scale){
-    let btn;
-    btn = $('<div>');
-    btn.attr({
+    let element, p;
+
+    p = $('<p>');
+    p.append(stage.name);
+
+    element = $('<div>');
+    element.attr({
       'class' : 'stage',
       'id' : stage.id,
       'onsuccess' : stage.onsuccess,
-      'type' : 'button',
       'stage_type' : stage.type,
     }).css({
       'left' : (parseInt(stage.x) + parseInt(stage.w)/2) * scale,
       'top' : (parseInt(stage.y) + parseInt(stage.h)/2) * scale,
       'width' : parseInt(stage.w) * scale,
       'height' : parseInt(stage.h) * scale,
-      'transform' : 'translate(-50%, -50%)',
-      'background-color' : 'lightblue',
-      'opacity' : 0.5,
-      'z-index' : 0,
-      'font-size' : 11,
-    }).append(stage.name);
-    $('#displayCenterProcess').append(btn);
+    }).append(p);
+    $('#displayCenter').append(element);
 
     draw_hover_element(stage);
 };
-  
+
 function draw_collection(stage, scale){
-    let btn, stage_name;
-    btn = $('<button>');
-    btn.attr({
+    let element, p, child;
+
+    p = $('<p>');
+    p.append(stage.name);
+
+    child = $('<div>');
+    child.append(p);
+
+    element = $('<div>');
+    element.attr({
       'class' : 'stage',
       'id' : stage.id,
       'onsuccess' : stage.onsuccess,
-      'type' : 'button',
       'stage_type' : stage.type,
     }).css({
       'left' : parseInt(stage.x) * scale,
       'top' : parseInt(stage.y) * scale,
       'width' : parseInt(stage.w) * 0.8 * scale,
-      'height' : parseInt(stage.h) * 0.8 * scale,
-      'transform' : 'translate(-50%, -50%) skew(-45deg)',
-      'background-color' : 'white',
-      'padding' : '5px',
-      'z-index' : 1,
-      'font-size' : 12,
-    });
-  
-    stage_name = $('<p>');
-    stage_name.attr({
-      'class' : 'stageName',
-    }).css({
-      'transform' : 'skew(45deg)',
-    });
-    stage_name.append(stage.name);
-  
-    btn.append(stage_name);
-    $('#displayCenterProcess').append(btn);
+      'height' : parseInt(stage.h) * 0.9 * scale,
+    }).append(child);
+    $('#displayCenter').append(element);
 
     draw_hover_element(stage);
-};
-
-function draw_stage_page(stage, scale){
-    draw_default_stage(stage, scale);
 };
 
 function draw_hover_element(stage){
@@ -870,11 +639,12 @@ function draw_hover_element(stage){
   }).append('More...');
   hover_element.append(hover_btn);
 
-  $('#displayCenterProcess').append(hover_element);
+  $('#displayCenter').append(hover_element);
 };
 
+//-------------------- Toggle Functions --------------------
 function toggle_expand_hover(stage_id){
-  var hover_element;
+  let hover_element;
   hover_element = $('.hover').filter('#' + stage_id);
   if (hover_element.hasClass('expanded')){
     // hide all, and show selected elements inside hover
@@ -890,52 +660,273 @@ function toggle_expand_hover(stage_id){
   hover_element.css('height', 'fit-content').toggleClass('expanded');
 };
 
-function size_page(){
-  let displayProcess, page, obj, stage, x, y, w, h, max_x, max_y, min_x, min_y;
-  displayProcess = $('#displayProcess');
-  page = displayProcess.find('#displayCenterProcess');
+function toggle_settings(){
+  let button, content;
+  button = $('#toggleSettings');
+  content = $('#settings');
 
-  max_x = min_x = max_y = min_y = 0;
+  if (!button.hasClass('openSettings')){
+    // show the settings
+    content.stop().slideDown(200);
+  } else {
+    // hide the settings
+    content.stop().slideUp(200);
+  };
 
-  page.find('.stage').each(function(i, element){
-    stage = $(element);
-    x = parseInt(stage.css('left'));
-    y = parseInt(stage.css('top'));
-    w = parseInt(stage.css('width'))/2;
-    h = parseInt(stage.css('height'))/2;
+  button.toggleClass('openSettings');
+};
 
-    if ((x + w) > max_x){
-      max_x = (x + w);
-    } else if ((x - w) < min_x){
-      min_x = (x - w);
+function toggle_legend_info(){
+  let page, section, links, button;
+  page = $('#infoPage');
+  section = $('#info');
+  links = $('.detail');
+  button = $('#infoButton');
+
+  if (!page.hasClass('show')){
+    section.css({
+      'width': '100%',
+      'height': '100%',
+    });
+    page.css({
+      'width': '150%',
+      'height': '150%',
+    });
+    button.addClass('xButton');
+    setTimeout(function(){
+      links.stop().slideDown(200);
+    }, 200);
+  } else {
+    links.stop().slideUp(200);
+    button.removeClass('xButton');
+
+    setTimeout(function(){
+      page.css({
+        'width': '0',
+        'height': '0',
+      });
+    }, 200);
+
+    setTimeout(function(){
+      section.css({
+        'width': '60px',
+        'height': '60px',
+      });
+      }, 700);
+  };
+  page.toggleClass('show');
+};
+
+function toggle_search_element(){
+  // declearing variables
+  let input = $('#inputDiv');
+  if (input.hasClass('hidden')){
+    input.slideDown(200);
+    input.find('input').focus();
+  } else {
+    input.slideUp(200);
+    input.find('input').val('');
+    search();
+  };
+  input.toggleClass('hidden');
+};
+
+function toggle_left_element(){
+  let left, right, button;
+
+  left = $('#left');
+  right = $('#right');
+  button = $('#toggleLeftButton p');
+
+  if (!left.hasClass('hidden')){
+    // hide the element
+    left.css('left', '-20%');
+    right.css('width', '100%');
+    button.css('transform', 'rotate(-90deg) rotateX(180deg)');
+  } else {
+    // show the element
+    left.css('left', '0');
+    right.css('width', '80%');
+    button.css('transform', 'rotate(-90deg)');
+  };
+  left.toggleClass('hidden');
+};
+
+//------------------------ Other ------------------------
+// remove all stages
+function empty_page(){
+  $('#displayCenter').empty();
+};
+
+// empty and reset the path
+function empty_path(){
+  global_path = [{'id': '0', 'name' : 'Main Page'}];
+  $('#path').empty();
+};
+
+// add or remove items in the path
+function edit_path(page_id, name, index = ''){
+  // updating the list
+  if (index == ''){
+    // adding new list-item
+    global_path.push({'id' : page_id, 'name' : name});
+  } else {
+    // removing all list items after index
+    global_path.length = parseInt(index) + 1;
+  };
+  // last draw the new path
+  draw_path();
+};
+
+// draw the path
+function draw_path(){
+  // variables
+  let path_div, btn_element, p_element, i;
+  // empty the entire path-element
+  path_div = $('#path');
+  path_div.empty();
+
+  // loop through the path list
+  for (i = 0; i < global_path.length - 1; i++){
+    // create a button for each entry
+    btn_element = $('<button>');
+    btn_element.attr({
+      'class' : 'pathButton',
+      'title' : 'Go to ' + global_path[i].name,
+    });
+    
+    // if the id of the page is 0 it is the main page
+    if (global_path[i].id == '0'){
+      btn_element.attr({
+        'onclick' : 'edit_path("", ""," ' + i + '"); draw_main_page()',
+      });
+    } else {
+      btn_element.attr({
+        'onclick' : 'edit_path("", "", "' + (i - 1) + '"); draw_subsheet("' + global_path[i].id + '")',
+      });
     };
-    if ((y + h) > max_y){
-      max_y = (y + h);
-    } else if ((y - h) < min_y){
-      min_y = (y - h);
+    // element text
+    p_element = $('<p>');
+    p_element.append(global_path[i].name);
+
+    btn_element.append(p_element);
+    path_div.append(btn_element);
+  };
+
+  // adding the current page to the label
+  $('#pageLabel').empty().append(global_path[global_path.length - 1].name);
+};
+
+// horizontal scroll for the path
+function path_scroll(){
+  let element, length, position;
+  element = $('#path');
+  length = element.prop('scrollWidth') - element.outerWidth();
+  position = 0;
+  element.bind('wheel', (e) => {
+    if (position <= length && position >= 0) {
+      if (e.originalEvent.wheelDelta / 120 > 0) {
+        position -= 20;
+        element.scrollLeft(position);
+      } else {
+        position += 20;
+        element.scrollLeft(position);
+      };
+    } else if (position > length){
+      position = length - 20;
+    } else if (position < 0){
+      position = 0 + 20;
     };
   });
-
-  obj = {};
-  if (Math.abs(max_x) > Math.abs(min_x)){
-    obj.w = Math.abs(max_x) * 2 + 100;
-  } else {
-    obj.w = Math.abs(min_x) * 2 + 100;
-  };
-  if (Math.abs(max_y) > Math.abs(min_y)){
-    obj.h = Math.abs(max_y) * 2 + 100;
-  } else {
-    obj.h = Math.abs(min_y) * 2 + 100;
-  };
-  console.log(obj.w + ' : ' + obj.h);
-  displayProcess.css({
-    'width' : obj.w,
-    'height' : obj.h,
+  element.scroll(() => {
+    position = element.scrollLeft();
   });
 };
 
-function zoom_func(){
-  let scale;
-  scale = parseFloat($('#zoomSlider').val())/10;
+// take the scale from the input element and draw the stages
+function change_scale(){
+  let scale = parseInt($('#zoomSlider').val())/5;
   draw_main_page(scale);
+};
+
+// set the value of the input element to 5 and draw the stages
+function reset_scale(){
+  let slider = $('#zoomSlider');
+  slider.val(5);
+  change_scale();
+};
+
+// change the size of the page to make the stages fit
+function auto_inc_page(){
+  let w, h, minx, miny, maxx, maxy, topStage, leftStage;
+  minx = miny = maxx = maxy = 0;
+  $('.stage').each(function(i, e){
+    stage = $(e);
+    if (stage.position().left < minx){
+      minx = stage.position().left;
+      leftStage = stage;
+    };
+    if (stage.position().top < miny){
+      miny = stage.position().top;
+      topStage = stage;
+    };
+    if ((stage.position().left + stage.outerWidth()) > maxx){
+      maxx = stage.position().left + stage.outerWidth();
+    };
+    if ((stage.position().top + stage.outerHeight()) > maxy){
+      maxy = stage.position().top + stage.outerHeight();
+    };
+  });
+  if (Math.abs(minx) > Math.abs(maxx)){
+    w = Math.abs(minx)*2;
+  } else {
+    w = Math.abs(maxx)*2;
+  };
+  if (Math.abs(miny) > Math.abs(maxy)){
+    h = Math.abs(miny)*2;
+  } else {
+    h = Math.abs(maxy)*2;
+  };
+  $('#display').outerWidth(w + 200);
+  $('#display').outerHeight(h + 200);
+
+  topStage.get(0).scrollIntoView();
+};
+
+// filter the processes in the margin
+function search(){
+  let search = $('#searchInput').val().toLowerCase();
+
+  $('.processParent').each((i, element) => {
+    let name = $(element).find('.processTop h3').text().toLowerCase();
+    if (name.indexOf(search) != -1){
+      $(element).stop().show();
+    } else {
+      $(element).stop().hide();
+    };
+  });
+};
+
+// hover effect on the stages
+function hover_effect(){
+  let stage, hover;
+  $('.stage').mouseenter(function() {
+    stage = $(this);
+    clearTimeout(hoverTimeout);
+    hoverTimeout = setTimeout(function(){
+      hover = $('#displayCenter').find('.hover').filter('#' + stage.attr('id'));
+      hover.addClass('showHover').stop().slideDown(200);
+    }, 500);
+  });
+  $('.stage').mouseleave(function() {
+    clearTimeout(hoverTimeout);
+    hover = $('#displayCenter').find('.hover').filter('#' + $(this).attr('id'));
+    hover.removeClass('showHover').stop().slideUp(100);
+  });
+  $('.hover').mouseenter(function() {
+    $(this).addClass('showHover').stop().slideDown(200);
+  });
+  $('.hover').mouseleave(function() {
+    $(this).removeClass('showHover').stop().slideUp(100);
+  });
 };

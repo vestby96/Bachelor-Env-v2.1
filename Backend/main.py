@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import mysql.connector
 import json
+import re
 
 # fastapi app
 app = FastAPI()
@@ -13,7 +14,7 @@ origins = [
     'http://192.168.0.40:8080',
     'http://192.168.0.101:5500',
     'http://localhost:8080',
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
 ]
 # origins can access these methods
 methods = [
@@ -33,16 +34,29 @@ app.add_middleware(
 @app.get('/{customer_name}/')
 def return_process_names(customer_name: str):
     try:
-        name_list = get_data_from_db(customer_name)
-        return JSONResponse(name_list)
+        # input validation
+        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]+$')
+        if re.fullmatch(pat, customer_name):
+            name_list = get_data_from_db(customer_name)
+            return JSONResponse(name_list)
+        else:
+            return JSONResponse({'Error' : 'input validation failed'})
     except:
         return JSONResponse({'Error' : 'return_process_names() failed'})
 
+#api for getting the full analyzed customer
 @app.get('/{customer_name}/{process_id}')
 def return_process(customer_name: str, process_id: str):
     try:
-        content = get_data_from_db(customer_name, process_id)
-        return JSONResponse(content)
+        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]+$')
+        # input validation
+        if re.fullmatch(pat, customer_name) is None:
+            return JSONResponse({'Error' : 'customer input validation failed'})
+        elif re.fullmatch(pat, process_id) is None:
+            return JSONResponse({'Error' : 'process input validation failed'})
+        else:
+            content = get_data_from_db(customer_name, process_id)
+            return JSONResponse(content)
     except:
         return JSONResponse({'Error' : 'return_process() failed'})
 

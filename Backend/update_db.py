@@ -326,6 +326,26 @@ def analyze_and_filter(xml_string: str):
                         }
                         stage_dict['steps'].append(calculation)
                 
+                # choices
+                choices_element = stage.find('proc:choices', ns)
+                if choices_element is not None:
+                    stage_dict['choices'] = list()
+                    all_choice_elements = choices_element.findall('proc:choice', ns)
+                    for choice in all_choice_elements:
+                        choice_obj = {}
+                        choice_name_element = choice.find('proc:name', ns)
+                        if choice_name_element is not None:
+                            choice_obj['name'] = str(choice_name_element.text)
+                            
+                        choice_distance_element = choice.find('proc:distance', ns)
+                        if choice_distance_element is not None:
+                            choice_obj['distance'] = str(choice_distance_element.text)
+                        
+                        choice_ontrue_element = choice.find('proc:ontrue', ns)
+                        if choice_ontrue_element is not None:
+                            choice_obj['ontrue'] = str(choice_ontrue_element.text)
+                        stage_dict['choices'].append(choice_obj)
+                
                 process_dict['stage_list'].append(stage_dict)
                 
             # finding the parent process
