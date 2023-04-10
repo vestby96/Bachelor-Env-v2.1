@@ -9,6 +9,7 @@ $(document).ready(() => {
   // run initial functions
   build_left_process();
   path_scroll();
+  detect_drag();
   //draw_line_using_angles({'x': 0, 'y': 0, 'w': 20}, {'x': -100, 'y': -100});
 
   // some functions are effected by the width of the window
@@ -338,7 +339,7 @@ function draw_main_page(scale = 1){
       };
     };
 
-    auto_inc_page();
+    scroll_to_center_display();
     draw_all_lines(true);
     hover_effect();
     if (choices.ids.length > 0){
@@ -395,7 +396,7 @@ function draw_subsheet(subsheet_id, scale = 1){
       };
     };
     
-    auto_inc_page();
+    scroll_to_center_display();
     draw_all_lines(true);
     hover_effect();
     if (choices.ids.length > 0){
@@ -890,7 +891,7 @@ function auto_inc_page(){
   $('#display').outerWidth(w + 200);
   $('#display').outerHeight(h + 200);
 
-  topStage.get(0).scrollIntoView();
+  //topStage.get(0).scrollIntoView();
 };
 
 // filter the processes in the margin
@@ -929,4 +930,60 @@ function hover_effect(){
   $('.hover').mouseleave(function() {
     $(this).removeClass('showHover').stop().slideUp(100);
   });
+};
+
+function detect_drag(){
+  let startX, stopX, startY, stopY, pxMoved, centerOffset, display, center, svg;
+  display = $('#display');
+  center = $('#displayCenter');
+  svg = $('svg');
+  centerOffset = pxMoved = {
+    'x': 0,
+    'y': 0,
+  };
+  display.draggable({
+    start: function(event, ui){
+      startX = ui.position.left;
+      startY = ui.position.top;
+    },
+    stop: function(event, ui){
+      stopX = ui.position.left;
+      stopY = ui.position.top;
+
+      pxMoved.x = startX - stopX;
+      pxMoved.y = startY - stopY;
+
+      centerOffset.x += pxMoved.x;
+      centerOffset.y += pxMoved.y;
+
+      center.css({
+        'left' : '-=' + pxMoved.x/2,
+        'top' : '-=' + pxMoved.y/2,
+      });
+      svg.css({
+        'left' : '-=' + pxMoved.x/2,
+        'top' : '-=' + pxMoved.y/2,
+      });
+      display.css({
+        'left' : '+=' + pxMoved.x/2,
+        'top' : '+=' + pxMoved.y/2,
+      });
+    }
+  });
+};
+
+function scroll_to_center_display(){
+  // denne trenger å gjøres slik at den scroller sidelengs
+  let processInfo = $('[stage_type=ProcessInfo]'), subsheetInfo = $('[stage_type=SubSheetInfo]');
+  
+  if (processInfo.length !== 0){
+    // scroller til processInfo stage
+    processInfo.get(0).scrollIntoView();
+  } else if (subsheetInfo.length !== 0){
+    // scroller til subsheetInfo stage
+    subsheetInfo.get(0).scrollIntoView();
+  } else {
+    // scroller til første stage den finner
+    $('.stage').get(0).scrollIntoView();
+  };
 };
