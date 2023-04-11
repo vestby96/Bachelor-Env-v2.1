@@ -1,6 +1,7 @@
 // global variables
-var global_path, process_short_list, full_process_list, displayed_object, displayed_process, process_info, ip, port, customer, hoverTimeout;
+var scale, global_path, process_short_list, full_process_list, displayed_object, displayed_process, process_info, ip, port, customer, hoverTimeout;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
+scale = 1;
 ip = 'localhost';
 port = '8000';
 customer = 'customer';
@@ -9,13 +10,11 @@ $(document).ready(() => {
   // run initial functions
   build_left_process();
   path_scroll();
-  detect_drag();
-  //draw_line_using_angles({'x': 0, 'y': 0, 'w': 20}, {'x': -100, 'y': -100});
+  $('#display').draggable();
+  detect_display_scroll();
 
   // some functions are effected by the width of the window
   $(window).resize(() => {
-    // error when resizeing window, and when toggling the margin
-    //draw_all_lines();
     path_scroll();
   });
 });
@@ -219,17 +218,17 @@ function draw_choice_lines(){
 
 // get the positions of all stages with onsucces and draw lines from start to end stage
 function draw_all_lines(remove_all = false){
+  let svg, start, end, start_x, start_y, end_x, end_y, center_x, center_y;
+  svg = $('svg');
   if (remove_all === true){
-    $('svg').find('path').filter('.line').remove();
+    svg.find('path').filter('.line').remove();
   } else {
-    $('svg').find('path').filter('.line').filter(':not([id])').remove();
+    svg.find('path').filter('.line').filter(':not([id])').remove();
   };
 
-  let start, end, start_x, start_y, end_x, end_y, center_x, center_y;
-
   // get the size of svg element
-  center_x = $('svg').outerWidth() / 2;
-  center_y = $('svg').outerHeight() / 2;
+  center_x = svg.outerWidth() / 2;
+  center_y = svg.outerHeight() / 2;
 
   $('.stage').each((i, start_element) => {
     start = $(start_element);
@@ -301,10 +300,10 @@ function draw_line_using_angles(start, end){
   } else if (start.x < end.x && start.y === end.y){
     console.log('straight right');
   };
-}
+};
 
 //---------------------- Draw Pages -----------------------
-function draw_main_page(scale = 1){
+function draw_main_page(){
     // variables
     let stage_list, stage, i, choices;
     choices = {
@@ -349,7 +348,7 @@ function draw_main_page(scale = 1){
     };
 };
   
-function draw_subsheet(subsheet_id, scale = 1){
+function draw_subsheet(subsheet_id, path = true){
     // variables
     let name, stage_list, stage, subsheet_list, i, choices;
     
@@ -367,8 +366,10 @@ function draw_subsheet(subsheet_id, scale = 1){
       };
     };
   
-    // draw the path
-    edit_path(subsheet_id, name,);
+    if (path === true){
+      // draw the path
+      edit_path(subsheet_id, name,);
+    }
   
     // remove previous page and create new blank page
     empty_page();
@@ -448,7 +449,9 @@ function draw_stage(stage, scale){
 
   $('#displayCenter').append(element);
 
-  draw_hover_element(stage);
+  if (stage.type !== 'Anchor'){
+    draw_hover_element(stage);
+  }
 };
 
 function draw_choices(id, choices, scale){
@@ -472,7 +475,7 @@ function draw_choices(id, choices, scale){
         'stage_type' : 'Choice',
       }).css({
         'left' : point.x,
-        'top' : point.y,
+        'top' : point.y * scale,
       });
       $('#displayCenter').append(element);
     };
@@ -549,7 +552,7 @@ function draw_block(stage, scale){
     }).append(p);
     $('#displayCenter').append(element);
 
-    draw_hover_element(stage);
+    //draw_hover_element(stage);
 };
 
 function draw_collection(stage, scale){
@@ -815,7 +818,9 @@ function draw_path(){
   };
 
   // adding the current page to the label
-  $('#pageLabel').empty().append(global_path[global_path.length - 1].name);
+  $('#pageLabel').empty().attr({
+    'page_id' : global_path[global_path.length - 1].id,
+  }).append(global_path[global_path.length - 1].name);
 };
 
 // horizontal scroll for the path
@@ -836,7 +841,7 @@ function path_scroll(){
     } else if (position > length){
       position = length - 20;
     } else if (position < 0){
-      position = 0 + 20;
+      position = 20;
     };
   });
   element.scroll(() => {
@@ -846,8 +851,13 @@ function path_scroll(){
 
 // take the scale from the input element and draw the stages
 function change_scale(){
-  let scale = parseInt($('#zoomSlider').val())/5;
-  draw_main_page(scale);
+  scale = parseInt($('#zoomSlider').val())/5;
+  let label = $('#pageLabel');
+  if (label.attr('page_id') !== '0'){
+    draw_subsheet(label.attr('page_id'), false);
+  } else {
+    draw_main_page();
+  };
 };
 
 // set the value of the input element to 5 and draw the stages
@@ -941,7 +951,7 @@ function detect_drag(){
     'x': 0,
     'y': 0,
   };
-  display.draggable({
+  display.draggable(/*{
     start: function(event, ui){
       startX = ui.position.left;
       startY = ui.position.top;
@@ -969,21 +979,57 @@ function detect_drag(){
         'top' : '+=' + pxMoved.y/2,
       });
     }
+  }*/);
+};
+
+function detect_display_scroll(){
+  let parent, display, overflow_w, overflow_h, position;
+  parent = $('#displayParent');
+  display = $('#display');
+  position = 0;
+
+  overflow_w = display.outerWidth() - parent.outerWidth();
+  overflow_h = display.outerHeight() - parent.outerHeight();
+
+  parent.bind('wheel', (e) => {
+    // vertical scroll
+    if (e.originalEvent.deltaY !== 0){
+      if (e.originalEvent.deltaY / 120 > 0) {
+        display.css('top', '-=5');
+      } else {
+        display.css('top', '+=5');
+      };
+    };
+    // horizontal scroll
+    if (e.originalEvent.deltaX !== 0){
+      if (e.originalEvent.deltaX / 120 > 0) {
+        display.css('left', '-=5');
+      } else {
+        display.css('left', '+=5');
+      };
+    };
+    
   });
 };
 
 function scroll_to_center_display(){
   // denne trenger å gjøres slik at den scroller sidelengs
+  let display = $('#display');
   let processInfo = $('[stage_type=ProcessInfo]'), subsheetInfo = $('[stage_type=SubSheetInfo]');
-  
-  if (processInfo.length !== 0){
-    // scroller til processInfo stage
-    processInfo.get(0).scrollIntoView();
-  } else if (subsheetInfo.length !== 0){
-    // scroller til subsheetInfo stage
-    subsheetInfo.get(0).scrollIntoView();
-  } else {
-    // scroller til første stage den finner
+  let start = $('[stage_type=Start]');
+  let info = processInfo.length !== 0 ? processInfo : subsheetInfo;
+  console.log(info);
+  let left_element = start.position().left < info.position().left ? start : info;
+  let top_element = start.position().top < info.position().top ? start : info;
+  console.log(left_element + ':' + top_element);
+
+  try{
+    start.get(0).scrollIntoView();
+    display.css({
+      'left' : '+=' + Math.abs(left)/2,
+      'top' : '+=100',
+    });
+  } catch {
     $('.stage').get(0).scrollIntoView();
   };
 };

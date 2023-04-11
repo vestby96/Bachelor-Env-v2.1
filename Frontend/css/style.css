@@ -8,8 +8,10 @@
     --complimentary-color-3: #0293CE;
     --complimentary-color-4: #C2B9AE;
     --complimentary-color-5: #000000;
+    --display-background: #f6f0e3;
+    --font-color-dark: black;
+    --font-color-light: white;
 }
-
 *{
     padding: 0;
     margin: 0;
@@ -104,6 +106,9 @@ html, body{
     background-color: var(--support-color-1);
 }
 /* process title */
+.selected .processTop{
+    color: var(--font-color-dark);
+}
 .selected .processTop:hover{
     background-color: transparent;
     z-index: 1;
@@ -127,7 +132,7 @@ html, body{
 .processParent{
     width: 100%;
     border-bottom: 2px solid #F4BA40;
-    color: white;
+    color: var(--font-color-light);
 }
 /* process title */
 .processTop{
@@ -169,7 +174,6 @@ html, body{
 .processTop button p{
     width: 25px;
     height: 25px;
-    background-color: transparent;
     background-image: url('../img/icons/icon_arrowup_orange.svg');
     background-repeat: no-repeat;
     background-position: center;
@@ -219,7 +223,7 @@ html, body{
 }
 nav{
     z-index: 3;
-    background-color: #F4BA40;
+    background-color: var(--primary-color);
     position: relative;
     width: 100%;
     height: 60px;
@@ -230,7 +234,6 @@ nav{
 #logo{
     width: 100px;
     height: 100%;
-    background-color: transparent;
     background-image: url('../img/icons/differ_logo_black.svg');
     background-repeat: no-repeat;
     background-position: center;
@@ -246,7 +249,7 @@ nav{
     border: none;
     border-radius: 5px;
     background-color: transparent;
-    transition: background-color 0.2s;
+    transition: box-shadow 0.2s;
 }
 #toggleSettings::before{
     content: '';
@@ -279,7 +282,7 @@ nav{
     transition: opacity 0.2s;
 }
 #toggleSettings:hover{
-    background-color: #ffd885;
+    box-shadow: 0px 0px 5px 1px var(--complimentary-color-5);
 }
 .openSettings::before{
     opacity: 1 !important;
@@ -291,9 +294,9 @@ nav{
     position: absolute;
     top: 60px;
     left: 0;
-    border: 1px solid black;
+    border: 1px solid var(--complimentary-color-5);
     border-radius: 0 0 10px 10px;
-    background-color: #F4BA40;
+    background-color: var(--primary-color);
     display: none;
 }
 #settings div{
@@ -304,8 +307,8 @@ nav{
     margin: 5px 5px 5px 5px;
 }
 #settings div button{
-    background-color: #4D4539;
-    color: white;
+    background-color: var(--secondary-color);
+    color: var(--font-color-light);
     border: none;
     border-radius: 5px;
     padding: 2px 5px;
@@ -314,7 +317,7 @@ nav{
     transform: scale(0.80);
 }
 #zoomSlider::-webkit-slider-runnable-track{
-    background-color: #B4AB9C;
+    background-color: var(--support-color-1);
     border-radius: 15px;
 }
 
@@ -323,7 +326,7 @@ nav{
     width: 100%;
     height: calc(100% - 60px);
     position: relative;
-    background-color: #f6f0e3;
+    background-color: var(--display-background);
 }
 #toggleLeftButton{
     z-index: 3;
@@ -348,7 +351,6 @@ nav{
     position: absolute;
     right: -4px;
     top: 4px;
-    background-color: transparent;
     background-image: url('../img/icons/icon_20.svg');
     background-repeat: no-repeat;
     background-position: center;
@@ -357,14 +359,14 @@ nav{
     transition: transform 0.2s;
 }
 #path{
-    background-color: #B4AB9C;
+    background-color: var(--support-color-1);
     position: relative;
     width: 100%;
     height: 35px;
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
-    /*box-shadow: inset -5px 7px 10px -5px black;*/
+    box-shadow: inset -5px 7px 10px -5px var(--complimentary-color-5);
 }
 .pathButton{
     max-width: 100px;
@@ -372,16 +374,17 @@ nav{
     min-height: 25px;
     height: 100%;
     border: none;
-    background-color: #cdcccc;
-    border-right: 1px solid #C2B9AE;
+    background-color: var(--complimentary-color-4);
+    border-right: 1px solid var(--support-color-1);
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 5px 5px 5px 5px;
-    transition: all 0.2s linear;
+    transition: box-shadow 0.2s linear;
 }
 .pathButton:hover{
-    background-color: #aaaaaa;
+    z-index: 1;
+    box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
 .pathButton p{
     white-space: nowrap;
@@ -390,6 +393,13 @@ nav{
     text-overflow: ellipsis;
     overflow: hidden;
 }
+#pageLabel{
+    position: absolute;
+    top: 35px;
+    left: 0;
+    padding: 5px;
+    z-index: 5;
+}
 #displayParent{
     position: absolute;
     left: 0;
@@ -397,24 +407,33 @@ nav{
     width: 100%;
     height: calc(100% - 35px);
     overflow: hidden;
-    box-shadow: inset 0 0 10px 0 black;
+    box-shadow: inset 0 0 10px 0 var(--complimentary-color-5);
 }
 #display{
     position: absolute;
-    left: -100%;
-    top: -100%;
-    width: 400%;
-    height: 400%;
+    left: -500px;
+    top: -500px;
+    min-width: 2000px;
+    min-height: 2000px;
 }
-#pageLabel{
+#display::before{
+    content: '';
     position: absolute;
     top: 0;
+    bottom: 0;
     left: 0;
-    padding: 5px;
-    z-index: 5;
+    right: 0;
+    border-right: 1px solid rgb(179, 179, 179);
+    border-bottom: 1px solid rgb(179, 179, 179);
+    background-size: 20px 20px;
+    background-image: 
+        linear-gradient(to right, rgb(179, 179, 179) 1px, transparent 1px),
+        linear-gradient(to bottom, rgb(179, 179, 179) 1px, transparent 1px);
 }
 svg{
     position: absolute;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
 }
@@ -428,9 +447,9 @@ svg{
 }
 .hover{
     position: absolute;
-    background-color: #e3e1db;
+    background-color: var(--display-background);
     display: none;
-    border: 1px solid black;
+    border: 1px solid var(--complimentary-color-5);
     padding: 5px 10px;
     white-space: nowrap;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.504);
@@ -449,6 +468,12 @@ svg{
 }
 @media (min-width: 1010px){
     #details{ grid-template-columns: repeat(2, 1fr);}
+}
+@media (min-width: 1600px){
+    #details{ grid-template-columns: repeat(3, 1fr);}
+}
+@media (min-width: 2200px){
+    #details{ grid-template-columns: repeat(4, 1fr);}
 }
 #info{
     z-index: 10;
@@ -474,12 +499,12 @@ svg{
     z-index: 2;
     display: none;
     font-weight: 700;
-    background-color: #4D4539;
-    color: white;
+    background-color: var(--secondary-color);
+    color: var(--font-color-light);
     padding: 10px;
 }
 .detail summary{
-    border-bottom: 1px solid #F4BA40;
+    border-bottom: 1px solid var(--primary-color);
     padding-bottom: 5px;
 }
 .detail .description{
@@ -495,11 +520,11 @@ svg{
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 1px solid black;
+    border: 1px solid var(--complimentary-color-5);
     transition: box-shadow 0.2s;
 }
 #infoButton:hover{
-    box-shadow: 0px 0px 5px 1px black;
+    box-shadow: 0px 0px 5px 1px var(--complimentary-color-5);
 }
 #infoButton:active{
     transform: scale(0.90);
@@ -552,7 +577,7 @@ svg{
     border-radius: 0 0 0 100%;
     width: 0;
     height: 0;
-    background-color: #F4BA40;
+    background-color: var(--primary-color);
     transition: all 0.5s;
 }
 
@@ -562,7 +587,7 @@ svg{
     height: 5px;
 }
 ::-webkit-scrollbar-thumb{
-    background-color: black;
+    background-color: var(--complimentary-color-5);
     cursor: pointer;
 }
 ::-webkit-scrollbar-track{
