@@ -6,14 +6,17 @@ ip = 'localhost';
 port = '8000';
 customer = 'customer';
 
+// method template
+$.fn.myFunction = function(string){
+  // this can be an eventlistener to toggle a class
+  alert(typeof this, string);
+};
+
 $(document).ready(() => {
   // run initial functions
   build_left_process();
   path_scroll();
-  $('#display').draggable();
-  detect_display_scroll();
 
-  // some functions are effected by the width of the window
   $(window).resize(() => {
     path_scroll();
   });
@@ -68,7 +71,7 @@ async function build_left_process(){
     processParent = $('<div>');
     div = $('<div>');
     title = $('<h3>');
-    button = $('<button>');
+    button = $('<div>');
     icon = $('<p>');
 
     title.attr({
@@ -87,7 +90,7 @@ async function build_left_process(){
       'class' : 'processParent',
       'id' : process.id,
     }).append(div);
-    $('#leftBottom').append(processParent);
+    $('#left').append(processParent);
   };
 };
 
@@ -338,7 +341,8 @@ function draw_main_page(){
       };
     };
 
-    scroll_to_center_display();
+    resize_page();
+    scroll_into_view();
     draw_all_lines(true);
     hover_effect();
     if (choices.ids.length > 0){
@@ -346,6 +350,8 @@ function draw_main_page(){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
+    control_drag($('#display'), $('#displayParent'));
+    //detect_display_scroll();
 };
   
 function draw_subsheet(subsheet_id, path = true){
@@ -397,7 +403,8 @@ function draw_subsheet(subsheet_id, path = true){
       };
     };
     
-    scroll_to_center_display();
+    resize_page();
+    scroll_into_view();
     draw_all_lines(true);
     hover_effect();
     if (choices.ids.length > 0){
@@ -405,6 +412,8 @@ function draw_subsheet(subsheet_id, path = true){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
+    control_drag($('#display'), $('#displayParent'));
+    //detect_display_scroll();
 };
 
 //---------------------- Draw Stages ----------------------
@@ -536,7 +545,15 @@ function draw_block(stage, scale){
     let element, p;
 
     p = $('<p>');
-    p.append(stage.name);
+    p.attr({
+      'class' : 'blockLabel',
+      'stage_type' : 'BlockLabel',
+    }).css({
+      'left' : parseInt(stage.x) * scale,
+      'top' : parseInt(stage.y) * scale,
+      'color' : stage.font_color,
+      'font-size' : stage.font_size,
+    }).append(stage.name);
 
     element = $('<div>');
     element.attr({
@@ -549,10 +566,9 @@ function draw_block(stage, scale){
       'top' : (parseInt(stage.y) + parseInt(stage.h)/2) * scale,
       'width' : parseInt(stage.w) * scale,
       'height' : parseInt(stage.h) * scale,
-    }).append(p);
+    });
     $('#displayCenter').append(element);
-
-    //draw_hover_element(stage);
+    $('#displayCenter').append(p);
 };
 
 function draw_collection(stage, scale){
@@ -665,22 +681,10 @@ function toggle_expand_hover(stage_id){
 };
 
 function toggle_settings(){
-  let button, content;
-  button = $('#toggleSettings');
-  content = $('#settings');
-
-  if (!button.hasClass('openSettings')){
-    // show the settings
-    content.stop().slideDown(200);
-  } else {
-    // hide the settings
-    content.stop().slideUp(200);
-  };
-
-  button.toggleClass('openSettings');
+  $('#settings').toggleClass('showSettings');
 };
 
-function toggle_legend_info(){
+function toggle_info(){
   let page, section, links, button;
   page = $('#infoPage');
   section = $('#info');
@@ -690,7 +694,7 @@ function toggle_legend_info(){
   if (!page.hasClass('show')){
     section.css({
       'width': '100%',
-      'height': '100%',
+      'height': '90%',
     });
     page.css({
       'width': '150%',
@@ -721,7 +725,7 @@ function toggle_legend_info(){
   page.toggleClass('show');
 };
 
-function toggle_search_element(){
+function toggle_search(){
   // declearing variables
   let input = $('#inputDiv');
   if (input.hasClass('hidden')){
@@ -735,25 +739,9 @@ function toggle_search_element(){
   input.toggleClass('hidden');
 };
 
-function toggle_left_element(){
-  let left, right, button;
-
-  left = $('#left');
-  right = $('#right');
-  button = $('#toggleLeftButton p');
-
-  if (!left.hasClass('hidden')){
-    // hide the element
-    left.css('left', '-20%');
-    right.css('width', '100%');
-    button.css('transform', 'rotate(-90deg) rotateX(180deg)');
-  } else {
-    // show the element
-    left.css('left', '0');
-    right.css('width', '80%');
-    button.css('transform', 'rotate(-90deg)');
-  };
-  left.toggleClass('hidden');
+function toggle_left(){
+  $('#left').toggleClass('hiddenLeft')
+  $('#toggleLeftButton').toggleClass('hiddenLeftButton');
 };
 
 //------------------------ Other ------------------------
@@ -851,7 +839,7 @@ function path_scroll(){
 
 // take the scale from the input element and draw the stages
 function change_scale(){
-  scale = parseInt($('#zoomSlider').val())/5;
+  scale = parseInt($('#scaleInput').val())/5;
   let label = $('#pageLabel');
   if (label.attr('page_id') !== '0'){
     draw_subsheet(label.attr('page_id'), false);
@@ -862,7 +850,7 @@ function change_scale(){
 
 // set the value of the input element to 5 and draw the stages
 function reset_scale(){
-  let slider = $('#zoomSlider');
+  let slider = $('#scaleSlider');
   slider.val(5);
   change_scale();
 };
@@ -904,6 +892,32 @@ function auto_inc_page(){
   //topStage.get(0).scrollIntoView();
 };
 
+function resize_page(){
+  let x = y = 0, display, stage, left, top;
+  display = $('#display');
+  display.find('.stage').each(function(e, elem){
+    stage = $(elem);
+    left = stage.position().left;
+    top = stage.position().top;
+    if (left < 0 && Math.abs(left) > x){
+      x = Math.abs(left);
+    } else if (left > 0 && (left + stage.outerWidth()) > x){
+      x = left + stage.outerWidth();
+    };
+    if (top < 0 && Math.abs(top) > y){
+      y = Math.abs(top);
+    } else if (top > 0 && (top + stage.outerHeight()) > y){
+      y = top + stage.outerHeight();
+    };
+  });
+  x = Math.ceil(x / 10) * 10;
+  y = Math.ceil(y / 10) * 10;
+  display.css({
+    'width' : x*2 + 100,
+    'height' : y*2 + 100,
+  });
+};
+
 // filter the processes in the margin
 function search(){
   let search = $('#searchInput').val().toLowerCase();
@@ -942,94 +956,131 @@ function hover_effect(){
   });
 };
 
-function detect_drag(){
-  let startX, stopX, startY, stopY, pxMoved, centerOffset, display, center, svg;
-  display = $('#display');
-  center = $('#displayCenter');
-  svg = $('svg');
-  centerOffset = pxMoved = {
-    'x': 0,
-    'y': 0,
+function control_drag(display, window_elem){
+  let sides, window, transition;
+
+  window = {
+    'width' : window_elem.outerWidth(),
+    'height' : window_elem.outerHeight(),
   };
-  display.draggable(/*{
+
+  display.draggable({
     start: function(event, ui){
-      startX = ui.position.left;
-      startY = ui.position.top;
+      transition = display.css('transition');
+      display.css({
+        'transition' : 'none',
+      });
     },
     stop: function(event, ui){
-      stopX = ui.position.left;
-      stopY = ui.position.top;
+      sides = {
+        'left' : display.position().left,
+        'right' : display.position().left + display.outerWidth(),
+        'top' : display.position().top,
+        'bottom' : display.position().top + display.outerHeight(),
+      };
 
-      pxMoved.x = startX - stopX;
-      pxMoved.y = startY - stopY;
-
-      centerOffset.x += pxMoved.x;
-      centerOffset.y += pxMoved.y;
-
-      center.css({
-        'left' : '-=' + pxMoved.x/2,
-        'top' : '-=' + pxMoved.y/2,
-      });
-      svg.css({
-        'left' : '-=' + pxMoved.x/2,
-        'top' : '-=' + pxMoved.y/2,
-      });
       display.css({
-        'left' : '+=' + pxMoved.x/2,
-        'top' : '+=' + pxMoved.y/2,
+        'transition' : transition,
       });
+
+      if (sides.left > 0){
+        display.css({
+          'left' : 0,
+        });
+      } else if (sides.right < window.width){
+        display.css({
+          'left' : window.width - display.outerWidth(),
+        });
+      };
+      if (sides.top > 0){
+        display.css({
+          'top' : 0,
+        });
+      } else if (sides.bottom < window.height){
+        display.css({
+          'top' : window.height - display.outerHeight(),
+        });
+      };
     }
-  }*/);
-};
-
-function detect_display_scroll(){
-  let parent, display, overflow_w, overflow_h, position;
-  parent = $('#displayParent');
-  display = $('#display');
-  position = 0;
-
-  overflow_w = display.outerWidth() - parent.outerWidth();
-  overflow_h = display.outerHeight() - parent.outerHeight();
-
-  parent.bind('wheel', (e) => {
-    // vertical scroll
-    if (e.originalEvent.deltaY !== 0){
-      if (e.originalEvent.deltaY / 120 > 0) {
-        display.css('top', '-=5');
-      } else {
-        display.css('top', '+=5');
-      };
-    };
-    // horizontal scroll
-    if (e.originalEvent.deltaX !== 0){
-      if (e.originalEvent.deltaX / 120 > 0) {
-        display.css('left', '-=5');
-      } else {
-        display.css('left', '+=5');
-      };
-    };
-    
   });
 };
 
-function scroll_to_center_display(){
-  // denne trenger å gjøres slik at den scroller sidelengs
-  let display = $('#display');
-  let processInfo = $('[stage_type=ProcessInfo]'), subsheetInfo = $('[stage_type=SubSheetInfo]');
-  let start = $('[stage_type=Start]');
-  let info = processInfo.length !== 0 ? processInfo : subsheetInfo;
-  console.log(info);
-  let left_element = start.position().left < info.position().left ? start : info;
-  let top_element = start.position().top < info.position().top ? start : info;
-  console.log(left_element + ':' + top_element);
+function detect_display_scroll(){
+  let parent, display, transition, sides, window;
+  parent = $('#displayParent');
+  display = $('#display');
 
-  try{
-    start.get(0).scrollIntoView();
-    display.css({
-      'left' : '+=' + Math.abs(left)/2,
-      'top' : '+=100',
-    });
-  } catch {
-    $('.stage').get(0).scrollIntoView();
+  transition = display.css('transition');
+
+  window = {
+    'width' : parent.outerWidth(),
+    'height' : parent.outerHeight(),
   };
+
+  parent.bind('wheel', (e) => {
+    sides = {
+      'left' : display.position().left,
+      'right' : display.position().left + display.outerWidth(),
+      'top' : display.position().top,
+      'bottom' : display.position().top + display.outerHeight(),
+    };
+
+    // vertical scroll
+    if (e.originalEvent.deltaY !== 0 /* check if display sides are inside the window */){
+      display.css('transition', 'none');
+      if (e.originalEvent.deltaY / 120 < 0 && sides.top < 0) {
+        display.css('top', '+=5');
+      } else if (e.originalEvent.deltaY / 120 > 0 && sides.bottom > window.height){
+        display.css('top', '-=5');
+      };
+    };
+    // horizontal scroll
+    if (e.originalEvent.deltaX !== 0 /* check if display sides are inside the window */){
+      display.css('transition', 'none');
+      if (e.originalEvent.deltaX / 120 < 0 && sides.left < 0) {
+        display.css('left', '+=5');
+      } else if (e.originalEvent.deltaX / 120 > 0 && sides.right > window.width) {
+        display.css('left', '-=5');
+      };
+    };
+    display.css('transition', transition);
+  });
+};
+
+function scroll_into_view(){
+  let display, size, sides, x = y = 0, stage, scrollPos;
+
+  display = $('#display');
+  size = {
+    'x' : display.outerWidth(),
+    'y' : display.outerHeight(),
+    'centerX' : display.outerWidth()/2,
+    'centerY' : display.outerHeight()/2,
+  };
+
+  // find minx and miny
+  display.find('.stage').each(function(i, elem){
+    stage = $(elem);
+    sides = {
+      'left' : stage.position().left,
+      'top' : stage.position().top,
+    };
+    if (sides.left < x){
+      x = sides.left;
+    };
+    if (sides.top < y){
+      y = sides.top;
+    };
+  });
+
+  // find the relative position stage/display
+  scrollPos = {
+    'x' : size.centerX - Math.abs(x),
+    'y' : size.centerY - Math.abs(y),
+  };
+  display.css({
+    'left' : -scrollPos.x + 100,
+    'top' : -scrollPos.y + 100,
+  });
+
 };

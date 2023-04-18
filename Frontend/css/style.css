@@ -24,78 +24,132 @@
 *:focus{
     outline: none;
 }
-button{
+.button{
+    border-radius: 5px;
     cursor: pointer;
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.button:active{
+    transform: scale(0.95);
+}
+.button:hover{
+    box-shadow: 0 0 10px 0 var(--complimentary-color-5) !important;
 }
 html, body{
     width: 100%;
     height: 100%;
     position: relative;
     min-width: 700px;
+    min-height: 700px;
 }
-#left{
-    z-index: 3;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 20%;
-    height: 100%;
-    transition: left 1s;
-}
-#leftTop{
-    z-index: 1;
+
+/* Nav */
+nav{
     position: relative;
     width: 100%;
-    height: 60px;
-    display: flex;
+    height: 10%;
     background-color: var(--primary-color);
-}
-#leftTop h2{
-    width: 80%;
-    height: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
-    text-transform: capitalize;
+    z-index: 4;
+    box-shadow: 0 0 10px 0 var(--complimentary-color-5);
 }
-#leftTop button{
-    width: 20%;
+nav .button{
+    padding: 5px;
+}
+nav #logo{
+    width: 100px;
     height: 100%;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: transparent;
+    background-image: url('../img/icons/differ_logo_black.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
-#leftTop button p{
+nav #searchToggler p{
     width: 25px;
-    height: 25px;
+    aspect-ratio: 1 / 1;
     background-image: url('../img/icons/icon_31.svg');
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 90%;
-    transition: transform 0.2s;
+    background-size: contain;
 }
-#leftTop button p:active{
-    transform: scale(0.90);
+nav #settingsToggler #icon{
+    width: 25px;
+    aspect-ratio: 1 / 1;
+    background-image: url('../img/icons/icon_adjust.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
-#leftBottom{
-    z-index: 0;
-    position: relative;
-    width: 100%;
-    height: calc(100% - 60px);
-    overflow-y: auto;
-    overflow-x: hidden;
+
+/* Settings */
+#settings{
+    position: absolute;
+    white-space: nowrap;
+    left: 60%;
+    transform: translate(-50%, -100%);
+    background-color: var(--primary-color);
+    padding: 10px;
+    border-radius: 0 0 5px 5px;
+    z-index: 3;
+    transition: all 0.2s;
+}
+#settings #scale{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+#settings #scale *{
+    margin: 0 5px;
+}
+#settings #scale .button{
+    padding: 5px;
+    background-color: var(--complimentary-color-3);
+}
+.showSettings{
+    transform: translate(-50%, 0) !important;
+}
+#scaleInput::-webkit-slider-thumb:active{
+    transform: scale(0.80);
+}
+#scaleInput::-webkit-slider-runnable-track{
+    background-color: var(--support-color-1);
+    border-radius: 15px;
+}
+
+/* Bottom */
+.wrapper{
+    height: 90% !important;
+}
+
+/* Left */
+#left{
+    position: absolute;
+    left: 0;
+    top: 10%;
+    width: 50%;
     background-color: var(--secondary-color);
+    box-shadow: 0 0 10px 0 var(--complimentary-color-5);
+    z-index: 1;
+    transition: all 0.2s;
 }
-#inputDiv{
+.hiddenLeft{
+    transform: translate(-100%);
+}
+#left #inputDiv{
     width: 100%;
     padding: 5px;
     border-bottom: 2px solid var(--primary-color);
     display: none;
 }
-#searchInput{
+#left #inputDiv #searchInput{
     width: 100%;
     padding: 5px;
     border: none;
@@ -103,36 +157,31 @@ html, body{
 
 /* styles for the selected/displayed process */
 .selected{
-    background-color: var(--support-color-1);
+    background-color: var(--complimentary-color-1) !important;
 }
 /* process title */
-.selected .processTop{
+.selected .processTop, .selected .dropdownContent h4{
     color: var(--font-color-dark);
 }
-.selected .processTop:hover{
-    background-color: transparent;
-    z-index: 1;
-}
-.selected .processTop::before{
-    background: linear-gradient(to right, var(--secondary-color), var(--support-color-1)) !important;
-}
-/* process dropdowncontent */
-.selected .dropdownContent h4:hover{
-    background-color: transparent;
-    z-index: 1;
-}
-.selected .dropdownContent h4::before{
-    background: linear-gradient(to right, var(--secondary-color), var(--support-color-1)) !important;
-}
 /* styles for the processes with displayed dropdowncontent */
-.open .processTop{
-    box-shadow: 0px 10px 5px 0px rgb(39, 39, 39);
+.open{
+    background-color: var(--support-color-1);
+}
+.open .processTop:hover{
+    z-index: 1;
+    box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
 /* styles for each process item */
 .processParent{
+    position: relative;
     width: 100%;
-    border-bottom: 2px solid #F4BA40;
+    border-top: 1px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
     color: var(--font-color-light);
+}
+.processParent:hover{
+    z-index: 1;
+    box-shadow: 0 0 10px 0 var(--complimentary-color-5) !important;
 }
 /* process title */
 .processTop{
@@ -140,38 +189,21 @@ html, body{
     display: flex;
     width: 100%;
     padding: 4px 0px 6px 10px;
-    transition: box-shadow 0.2s;
-}
-.processTop::before{
-    position: absolute;
-    content: '';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(to right, #8d7f6a, #4D4539);
-    box-shadow: inset 20px 0px 10px -10px rgb(39, 39, 39);
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.processTop:hover::before{
-    opacity: 1;
+    transition: all 0.2s;
 }
 .processTop h3{
     flex: 4;
     cursor: pointer;
     text-transform: capitalize;
 }
-.processTop button{
+.processTop .dropdownButton{
     flex: 1;
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
-    background-color: transparent;
 }
-.processTop button p{
+.processTop .dropdownButton p{
     width: 25px;
     height: 25px;
     background-image: url('../img/icons/icon_arrowup_orange.svg');
@@ -179,10 +211,11 @@ html, body{
     background-position: center;
     background-size: 70%;
     transform: rotate(90deg);
-    transition: transform 0.2s;
+    transition: all 0.2s;
 }
 /* process dropdowncontent */
 .dropdownContent{
+    position: relative;
     display: flex;
     flex-direction: column;
     max-height: 200px;
@@ -196,168 +229,49 @@ html, body{
     border-top: 0.5px solid #F4BA40;
     text-transform: capitalize;
     cursor: pointer;
+    transition: all 0.2s;
 }
-.dropdownContent h4::before{
-    position: absolute;
-    content: '';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(to right, #8d7f6a, #4D4539);
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.2s;
+.dropdownContent h4:hover{
+    z-index: 1;
+    box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
-.dropdownContent h4:hover::before{
-    opacity: 1;
-}
-/* styles for the right side og the page */
+
+/* Right */
 #right{
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 80%;
-    height: 100%;
-    transition: width 1s;
-}
-nav{
-    z-index: 3;
-    background-color: var(--primary-color);
     position: relative;
     width: 100%;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    z-index: 0;
 }
-#logo{
-    width: 100px;
-    height: 100%;
-    background-image: url('../img/icons/differ_logo_black.svg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-}
-
-/* styles for settings dropdown */
-#toggleSettings{
-    position: absolute;
-    left: 20px;
-    width: 25px;
-    height: 25px;
-    border: none;
-    border-radius: 5px;
-    background-color: transparent;
-    transition: box-shadow 0.2s;
-}
-#toggleSettings::before{
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 0;
-    border-radius: 5px;
-    background-image: url('../img/icons/icon_11.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 80%;
-    transition: opacity 0.2s;
-}
-#toggleSettings::after{
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 1;
-    border-radius: 5px;
-    background-image: url('../img/icons/icon_adjust.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    transition: opacity 0.2s;
-}
-#toggleSettings:hover{
-    box-shadow: 0px 0px 5px 1px var(--complimentary-color-5);
-}
-.openSettings::before{
-    opacity: 1 !important;
-}
-.openSettings::after{
-    opacity: 0 !important;
-}
-#settings{
-    position: absolute;
-    top: 60px;
-    left: 0;
-    border: 1px solid var(--complimentary-color-5);
-    border-radius: 0 0 10px 10px;
-    background-color: var(--primary-color);
-    display: none;
-}
-#settings div{
-    margin: 0 5px 0 5px;
-    display: flex;
-}
-#settings div *{
-    margin: 5px 5px 5px 5px;
-}
-#settings div button{
-    background-color: var(--secondary-color);
-    color: var(--font-color-light);
-    border: none;
-    border-radius: 5px;
-    padding: 2px 5px;
-}
-#zoomSlider::-webkit-slider-thumb:active{
-    transform: scale(0.80);
-}
-#zoomSlider::-webkit-slider-runnable-track{
-    background-color: var(--support-color-1);
-    border-radius: 15px;
-}
-
-/* */
-#rightBottom{
-    width: 100%;
-    height: calc(100% - 60px);
-    position: relative;
-    background-color: var(--display-background);
-}
+/* Toggle Left side button */
 #toggleLeftButton{
-    z-index: 3;
     position: absolute;
-    left: 0;
+    left: 50%;
     bottom: 5%;
-    width: 12px;
-    height: 20px;
-    border: none;
+    width: 1.5%;
+    aspect-ratio: 1 / 2;
     border-radius: 0 5px 5px 0;
-    box-shadow: 2px 0 2px grey;
-    opacity: 0.5;
-    transition: box-shadow 0.2s, opacity 0.2s;
-}
-#toggleLeftButton:hover{
-    opacity: 1;
-    box-shadow: 5px 0 5px grey;
+    background-color: white;
+    box-shadow: 0 0 2px 0 var(--complimentary-color-5);
+    overflow: hidden;
+    z-index: 5;
 }
 #toggleLeftButton p{
-    width: 20px;
-    height: 12px;
-    position: absolute;
-    right: -4px;
-    top: 4px;
+    width: 100%;
+    height: 100%;
     background-image: url('../img/icons/icon_20.svg');
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 125%;
+    background-size: 150%;
     transform: rotate(-90deg);
     transition: transform 0.2s;
 }
+.hiddenLeftButton{
+    left: 0 !important;
+}
+.hiddenLeftButton p{
+    transform: rotate(-90deg) rotateX(180deg) !important;
+}
+/* Path */
 #path{
     background-color: var(--support-color-1);
     position: relative;
@@ -399,6 +313,7 @@ nav{
     left: 0;
     padding: 5px;
     z-index: 5;
+    text-transform: capitalize;
 }
 #displayParent{
     position: absolute;
@@ -411,10 +326,9 @@ nav{
 }
 #display{
     position: absolute;
-    left: -500px;
-    top: -500px;
     min-width: 2000px;
     min-height: 2000px;
+    transition: all 0.2s ease;
 }
 #display::before{
     content: '';
@@ -480,7 +394,7 @@ svg{
     width: 60px;
     height: 60px;
     position: absolute;
-    top: 0;
+    top: 10%;
     right: 0;
     overflow: hidden;
     display: flex;
@@ -509,66 +423,6 @@ svg{
 }
 .detail .description{
     padding-top: 5px;
-}
-#infoButton{
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 100%;
-    border: 1px solid var(--complimentary-color-5);
-    transition: box-shadow 0.2s;
-}
-#infoButton:hover{
-    box-shadow: 0px 0px 5px 1px var(--complimentary-color-5);
-}
-#infoButton:active{
-    transform: scale(0.90);
-}
-#infoButton::before{
-    position: absolute;
-    content: '';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    opacity: 0;
-    background-image: url('../img/icons/icon_11.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    transition: opacity 0.2s;
-}
-#infoButton p{
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: 700;
-    transition: opacity 0.2s;
-}
-#infoButton p::selection{
-    color: none;
-    background-color: none;
-}
-#infoButton p::-moz-selection {
-    color: none;
-    background: none;
-}
-.xButton::before{
-    opacity: 1 !important;
-    z-index: 0 !important;
-}
-.xButton P{
-    opacity: 0;
 }
 #infoPage{
     position: absolute;
@@ -604,11 +458,15 @@ svg{
     background-color: white;
     background-repeat: no-repeat;
     background-position: center;
-    z-index: 2;
+    z-index: 1;
     font-size: 12px;
     text-align: center;
     cursor: default;
     transform: translate(-50%, -50%);
+}
+.stage p{
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 [stage_type="Start"], [stage_type="End"]{
     padding: 10px;
@@ -688,14 +546,15 @@ svg{
     background-color: rgb(138, 209, 233);
     font-size: 11px;
     text-align: left;
-    z-index: 1;
     opacity: 0.5;
+    z-index: 0;
 }
-[stage_type="Block"] p{
-    width: max-content;
-    height: max-content;
+.blockLabel{
+    position: absolute;
     background-color: white;
     border: 1px solid black;
+    cursor: default;
+    font-size: 12px;
 }
 [stage_type="Collection"]{
     transform: translate(-50%, -50%) skew(-60deg);
