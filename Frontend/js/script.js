@@ -6,16 +6,11 @@ ip = 'localhost';
 port = '8000';
 customer = 'customer';
 
-// method template
-$.fn.myFunction = function(string){
-  // this can be an eventlistener to toggle a class
-  alert(typeof this, string);
-};
-
 $(document).ready(() => {
   // run initial functions
   build_left_process();
   path_scroll();
+  $('#display').draggable();
 
   $(window).resize(() => {
     path_scroll();
@@ -151,6 +146,7 @@ async function toggle_dropdown_content(process_id){
     title = $('<h4>');
     title.attr({
       'onclick' : 'empty_path();select_process("' + process_id + '")',
+      'title' : 'Main Page',
     }).append('Main Page');
     div.append(title);
     // loop gjennom subsheets
@@ -159,6 +155,7 @@ async function toggle_dropdown_content(process_id){
       title = $('<h4>');
       title.attr({
         'onclick' : 'empty_path();select_process("' + process_id + '","' + subsheet.id + '")',
+        'title' : subsheet.name,
       }).append(subsheet.name);
       div.append(title);
     };
@@ -181,7 +178,7 @@ async function toggle_dropdown_content(process_id){
 
 //---------------------- SVG -----------------------
 // draw an svg path from given start and end coordinates
-function draw_line(x1, y1, x2, y2, arrow = true, id = null){
+function draw_line(x1, y1, x2, y2, arrow = true, id = null, onfalse = false){
   let line, midX, midY;
   midX = (x1 + x2)/2
   midY = (y1 + y2)/2
@@ -196,6 +193,9 @@ function draw_line(x1, y1, x2, y2, arrow = true, id = null){
   };
   if (id !== null){
     line.setAttribute('id', id);
+  };
+  if (onfalse === true){
+    line.setAttribute('stroke-dasharray', "5,5");
   };
   $('svg').append(line);
   return line;
@@ -239,11 +239,12 @@ function draw_all_lines(remove_all = false){
       $('.stage').each((j, end_element) => {
         end = $(end_element);
         if (start.attr('onsuccess') === end.attr('id') || start.attr('ontrue') === end.attr('id') || start.attr('onfalse') === end.attr('id')){
+          let onfalse = start.attr('onfalse') === end.attr('id') ? true : false;
           start_x = start.position().left + start.outerWidth()/2 + center_x;
           start_y = start.position().top + start.outerHeight()/2 + center_y;
           end_x = end.position().left + end.outerWidth()/2 + center_x;
           end_y = end.position().top + end.outerHeight()/2 + center_y;
-          draw_line(start_x, start_y, end_x, end_y);
+          draw_line(start_x, start_y, end_x, end_y, true, null, onfalse);
         };
       });
     };
@@ -321,23 +322,31 @@ function draw_main_page(){
     empty_page();
   
     //draw stages
-    for (i = 0; i < stage_list.length; i++){
+    for (i = 0; i < stage_list.length; i++) {
       stage = stage_list[i];
-
-      if (!stage.subsheet_id && stage.type == 'Block'){
-        draw_block(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'ChoiceStart'){
-        choices.ids.push(stage.id);
-        choices.items.push(stage.choices);
-        draw_stage(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'ProcessInfo'){
-        draw_process_info(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'SubSheetInfo'){
-        draw_subsheet_info(stage, scale);
-      } else if (!stage.subsheet_id && stage.type == 'Collection'){
-        draw_collection(stage, scale);
-      } else if (!stage.subsheet_id){
-        draw_stage(stage, scale);
+      if (!stage.subsheet_id) {
+        switch(stage.type) {
+          case 'Block':
+            draw_block(stage, scale);
+            break;
+          case 'ChoiceStart':
+            choices.ids.push(stage.id);
+            choices.items.push(stage.choices);
+            draw_stage(stage, scale);
+            break;
+          case 'ProcessInfo':
+            draw_process_info(stage, scale);
+            break;
+          case 'SubSheetInfo':
+            draw_subsheet_info(stage, scale);
+            break;
+          case 'Collection':
+            draw_collection(stage, scale);
+            break;
+          default:
+            draw_stage(stage, scale);
+            break;
+        };
       };
     };
 
@@ -350,7 +359,7 @@ function draw_main_page(){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
-    control_drag($('#display'), $('#displayParent'));
+    //control_drag($('#display'), $('#displayParent'));
     //detect_display_scroll();
 };
   
@@ -384,22 +393,32 @@ function draw_subsheet(subsheet_id, path = true){
     stage_list = displayed_process.child_process.stage_list;
   
     // draw stages
-    for (i = 0; i < stage_list.length; i++){
+    for (i = 0; i < stage_list.length; i++) {
       stage = stage_list[i];
-      if (stage.subsheet_id == subsheet_id && stage.type == 'Block'){
-        draw_block(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'ChoiceStart'){
-        choices.ids.push(stage.id);
-        choices.items.push(stage.choices);
-        draw_stage(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'ProcessInfo'){
-        draw_process_info(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'SubSheetInfo'){
-        draw_subsheet_info(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id && stage.type == 'Collection'){
-        draw_collection(stage, scale);
-      } else if (stage.subsheet_id == subsheet_id){
-        draw_stage(stage, scale);
+      if (stage.subsheet_id !== subsheet_id) {
+        continue; // Skip this stage if subsheet_id doesn't match
+      };
+      switch(stage.type) {
+        case 'Block':
+          draw_block(stage, scale);
+          break;
+        case 'ChoiceStart':
+          choices.ids.push(stage.id);
+          choices.items.push(stage.choices);
+          draw_stage(stage, scale);
+          break;
+        case 'ProcessInfo':
+          draw_process_info(stage, scale);
+          break;
+        case 'SubSheetInfo':
+          draw_subsheet_info(stage, scale);
+          break;
+        case 'Collection':
+          draw_collection(stage, scale);
+          break;
+        default:
+          draw_stage(stage, scale);
+          break;
       };
     };
     
@@ -412,7 +431,7 @@ function draw_subsheet(subsheet_id, path = true){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
-    control_drag($('#display'), $('#displayParent'));
+    //control_drag($('#display'), $('#displayParent'));
     //detect_display_scroll();
 };
 
@@ -598,7 +617,7 @@ function draw_collection(stage, scale){
 };
 
 function draw_hover_element(stage){
-  let hover_element, hover_btn, hover_x, hover_y, element;
+  let hover_element, hover_btn, hover_x, hover_y, element, to_stage;
 
   hover_x = $('#' + stage.id).position().left;
   hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
@@ -616,21 +635,43 @@ function draw_hover_element(stage){
   element.attr('class', 'stageType').append('Type: ' + stage.type);
   hover_element.append(element);
 
+  if (stage.type === 'ChoiceStart'){
+    element = $('<p>');
+    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.groupid === currentObj.groupid && stage !== currentObj});
+    element.attr('id', 'groupid').append('Otherwise: ' + to_stage[0].name).hide();
+    hover_element.append(element);
+  };
+
   if (stage.onsuccess){
     element = $('<p>');
-    element.attr('id', 'onsuccess').append('Success: ' + stage.onsuccess).hide();
+    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.onsuccess === currentObj.id});
+    while (to_stage[0].type === 'Anchor'){
+      let temp_stage = to_stage[0];
+      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+    };
+    element.attr('id', 'onsuccess').append('Success: ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
   if (stage.ontrue){
     element = $('<p>');
-    element.attr('id', 'ontrue').append('True: ' + stage.ontrue).hide();
+    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.ontrue === currentObj.id});
+    while (to_stage[0].type === 'Anchor'){
+      let temp_stage = to_stage[0];
+      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+    };
+    element.attr('id', 'ontrue').append('True: ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
   if (stage.onfalse){
     element = $('<p>');
-    element.attr('id', 'onfalse').append('False: ' + stage.onfalse).hide();
+    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.onfalse === currentObj.id});
+    while (to_stage[0].type === 'Anchor'){
+      let temp_stage = to_stage[0];
+      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+    };
+    element.attr('id', 'onfalse').append('False: ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
@@ -850,48 +891,12 @@ function change_scale(){
 
 // set the value of the input element to 5 and draw the stages
 function reset_scale(){
-  let slider = $('#scaleSlider');
+  let slider = $('#scaleInput');
   slider.val(5);
   change_scale();
 };
 
 // change the size of the page to make the stages fit
-function auto_inc_page(){
-  let w, h, minx, miny, maxx, maxy, topStage, leftStage;
-  minx = miny = maxx = maxy = 0;
-  $('.stage').each(function(i, e){
-    stage = $(e);
-    if (stage.position().left < minx){
-      minx = stage.position().left;
-      leftStage = stage;
-    };
-    if (stage.position().top < miny){
-      miny = stage.position().top;
-      topStage = stage;
-    };
-    if ((stage.position().left + stage.outerWidth()) > maxx){
-      maxx = stage.position().left + stage.outerWidth();
-    };
-    if ((stage.position().top + stage.outerHeight()) > maxy){
-      maxy = stage.position().top + stage.outerHeight();
-    };
-  });
-  if (Math.abs(minx) > Math.abs(maxx)){
-    w = Math.abs(minx)*2;
-  } else {
-    w = Math.abs(maxx)*2;
-  };
-  if (Math.abs(miny) > Math.abs(maxy)){
-    h = Math.abs(miny)*2;
-  } else {
-    h = Math.abs(maxy)*2;
-  };
-  $('#display').outerWidth(w + 200);
-  $('#display').outerHeight(h + 200);
-
-  //topStage.get(0).scrollIntoView();
-};
-
 function resize_page(){
   let x = y = 0, display, stage, left, top;
   display = $('#display');

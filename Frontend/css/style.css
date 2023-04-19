@@ -9,6 +9,7 @@
     --complimentary-color-4: #C2B9AE;
     --complimentary-color-5: #000000;
     --display-background: #f6f0e3;
+    --display-grid: #d3d3d3;
     --font-color-dark: black;
     --font-color-light: white;
 }
@@ -139,6 +140,8 @@ nav #settingsToggler #icon{
     box-shadow: 0 0 10px 0 var(--complimentary-color-5);
     z-index: 1;
     transition: all 0.2s;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .hiddenLeft{
     transform: translate(-100%);
@@ -178,6 +181,7 @@ nav #settingsToggler #icon{
     border-top: 1px solid var(--primary-color);
     border-bottom: 1px solid var(--primary-color);
     color: var(--font-color-light);
+    transition: background-color 0.2s;
 }
 .processParent:hover{
     z-index: 1;
@@ -188,13 +192,18 @@ nav #settingsToggler #icon{
     position: relative;
     display: flex;
     width: 100%;
-    padding: 4px 0px 6px 10px;
     transition: all 0.2s;
+    overflow: hidden;
 }
 .processTop h3{
+    padding: 5% 2%;
     flex: 4;
     cursor: pointer;
     text-transform: capitalize;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
 .processTop .dropdownButton{
     flex: 1;
@@ -204,14 +213,18 @@ nav #settingsToggler #icon{
     align-items: center;
 }
 .processTop .dropdownButton p{
-    width: 25px;
-    height: 25px;
+    width: max(50%, 50px);
+    aspect-ratio: 1 / 1;
+    border-radius: 100%;
     background-image: url('../img/icons/icon_arrowup_orange.svg');
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 70%;
+    background-size: 118%;
     transform: rotate(90deg);
     transition: all 0.2s;
+}
+.processTop .dropdownButton p:hover{
+    box-shadow: 0 0 10px 0 var(--complimentary-color-5);
 }
 /* process dropdowncontent */
 .dropdownContent{
@@ -225,9 +238,11 @@ nav #settingsToggler #icon{
 }
 .dropdownContent h4{
     position: relative;
-    padding: 4px 5px 2px 5px;
-    border-top: 0.5px solid #F4BA40;
+    padding: 1% 0.5%;
+    border-top: 0.5px solid var(--primary-color);
     text-transform: capitalize;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -328,7 +343,6 @@ nav #settingsToggler #icon{
     position: absolute;
     min-width: 2000px;
     min-height: 2000px;
-    transition: all 0.2s ease;
 }
 #display::before{
     content: '';
@@ -337,12 +351,12 @@ nav #settingsToggler #icon{
     bottom: 0;
     left: 0;
     right: 0;
-    border-right: 1px solid rgb(179, 179, 179);
-    border-bottom: 1px solid rgb(179, 179, 179);
+    border-right: 1px solid var(--display-grid);
+    border-bottom: 1px solid var(--display-grid);
     background-size: 20px 20px;
     background-image: 
-        linear-gradient(to right, rgb(179, 179, 179) 1px, transparent 1px),
-        linear-gradient(to bottom, rgb(179, 179, 179) 1px, transparent 1px);
+        linear-gradient(to right, var(--display-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--display-grid) 1px, transparent 1px);
 }
 svg{
     position: absolute;
@@ -366,11 +380,12 @@ svg{
     border: 1px solid var(--complimentary-color-5);
     padding: 5px 10px;
     white-space: nowrap;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.504);
+    box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
 .hover button{
     background-color: transparent;
     border: none;
+    cursor: pointer;
 }
 .showHover{
     z-index: 4;
@@ -463,10 +478,6 @@ svg{
     text-align: center;
     cursor: default;
     transform: translate(-50%, -50%);
-}
-.stage p{
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 [stage_type="Start"], [stage_type="End"]{
     padding: 10px;
