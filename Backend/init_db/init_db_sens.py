@@ -69,3 +69,7 @@ insert_to_db_sens('test process 2', xml_string)
 f = open("/code/init_db/rotete-prosess.xml", "r")
 xml_string = f.read()
 insert_to_db_sens('Rotete prosess', xml_string)
+
+f = open("/code/init_db/object-with-image.xml", "r")
+xml_string = f.read()
+insert_to_db_sens('Object with image', xml_string)

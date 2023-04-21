@@ -33,7 +33,7 @@ def analyze_and_filter(xml_string: str):
         'proc': 'http://www.blueprism.co.uk/product/process'}
      
     # return list with all info
-    parent_process_list = []
+    file_root = []
     
     process_file_info = {
         'name' : str(root.find('bpr:name', ns).text),
@@ -43,6 +43,7 @@ def analyze_and_filter(xml_string: str):
         'package_name' : str(root.find('bpr:package-name', ns).text),
         'user_created_by' : str(root.find('bpr:user-created-by', ns).text),
     }
+    file_root.append(process_file_info)
     
     # select the process elements
     for process in root.findall(".//proc:process", ns):
@@ -54,7 +55,7 @@ def analyze_and_filter(xml_string: str):
                 'xmlns' : process.get('xmlns'),
                 'child_process' : {}
             }
-            parent_process_list.append(process_dict)
+            file_root.append(process_dict)
         # handling the child processes
         else:
             process_dict = {
@@ -349,14 +350,177 @@ def analyze_and_filter(xml_string: str):
                 process_dict['stage_list'].append(stage_dict)
                 
             # finding the parent process
-            for parent in parent_process_list:
+            for parent in file_root:
                 if parent['name'] == process.get('name'):
                     # saving the child process as a dict in the parent process dict
                     parent['child_process'] = process_dict
+                
+    # select the object elements
+    for obj in root.findall(".//proc:object", ns):
+        # handeling the parent processes
+        obj_dict = {
+            'id' : obj.get('id'),
+            'name' : obj.get('name'),
+            'xmlns' : obj.get('xmlns'),
+            'child_process' : {}
+        }
+        
+        process = obj.find(".//proc:process", ns)
+        
+        # handling the child processes
+        child_process_dict = {
+            'name' : process.get('name'),
+            'version' : process.get('version'),
+            'bpversion' : process.get('bpversion'),
+            'narrative' : process.get('narrative'),
+            'byrefcollection' : process.get('byrefcollection'),
+            'view' : {
+                'camerax' : int(),
+                'cameray' : int(),
+                'zoom' : int(),
+            },
+                'preconditions' : list(),
+                'endpoint' : str(),
+                'subsheet_list' : list(),
+                'stage_list' : list()
+            }
+            
+        # view
+        view_element = process.find('proc:view', ns)
+        if view_element is not None:
+            camerax = view_element.find('proc:camerax', ns)
+            cameray = view_element.find('proc:cameray', ns)
+            zoom = view_element.find('proc:zoom', ns)
+            if camerax is not None:
+                child_process_dict['view']['camerax'] = float(camerax.text)
+            if cameray is not None:
+                child_process_dict['view']['cameray'] = float(cameray.text)
+            if zoom is not None:
+                child_process_dict['view']['zoom'] = float(zoom.text)
+        
+        # preconditions
+        preconditions = process.find('proc:preconditions', ns)
+        if preconditions is not None:
+            conditions = preconditions.findall('proc:condition', ns)
+            for condition in conditions:
+                child_process_dict['preconditions'].append(condition.get('narrative'))
+            
+        # endpoint
+        child_process_dict['endpoint'] = str(process.find('proc:endpoint', ns).get('narrative'))
+            
+        # select the subsheet elements
+        for subsheet in process.findall('.//proc:subsheet', ns):
+            subsheet_dict = {
+                'id' : subsheet.get('subsheetid'),
+                'type' : subsheet.get('type'),
+                'published' : subsheet.get('published'),
+                'name' : str(),
+                'view' : {
+                    'camerax' : float(),
+                    'cameray' : float(),
+                    'zoom' : float(),
+                }
+            }
+            name = subsheet.find('proc:name', ns)
+            if name is not None:
+                subsheet_dict['name'] = str(name.text)
+                
+            # view
+            view_element = subsheet.find('proc:view', ns)
+            if view_element is not None:
+                camerax = view_element.find('proc:camerax', ns)
+                cameray = view_element.find('proc:cameray', ns)
+                zoom = view_element.find('proc:zoom', ns)
+                if camerax is not None:
+                    subsheet_dict['view']['camerax'] = float(camerax.text)
+                if cameray is not None:
+                    subsheet_dict['view']['cameray'] = float(cameray.text)
+                if zoom is not None:
+                    subsheet_dict['view']['zoom'] = float(zoom.text)
+                
+            child_process_dict['subsheet_list'].append(subsheet_dict)
+                    
+        # select the stage elements
+        for stage in process.findall('.//proc:stage', ns):
+            stage_dict = {
+                'id' : stage.get('stageid'),
+                'name' : stage.get('name'),
+                'type' : stage.get('type')
+            }
+                    
+            # x, y, w, h
+            display_element = stage.find('proc:display', ns)
+            if display_element is not None:
+                x = display_element.get('x')
+                y = display_element.get('y')
+                try:
+                    w = display_element.get('w')
+                    h = display_element.get('h')
+                except:
+                    w = 0
+                    h = 0
+                stage_dict['x'] = x
+                stage_dict['y'] = y
+                stage_dict['w'] = w
+                stage_dict['h'] = h
+                 
+            # onsuccess
+            onsuccess_element = stage.find('proc:onsuccess', ns)
+            if onsuccess_element is not None:
+                onsuccess = str(onsuccess_element.text)
+                stage_dict['onsuccess'] = onsuccess
+                    
+            # narrative
+            narrative_element = stage.find('proc:narrative', ns)
+            if narrative_element is not None:
+                narrative = str(narrative_element.text)
+                stage_dict['narrative'] = narrative
+                    
+            # subsheet id
+            subsheet_id_element = stage.find('proc:subsheetid', ns)
+            if subsheet_id_element is not None:
+                subsheet_id = str(subsheet_id_element.text)
+                stage_dict['subsheet_id'] = subsheet_id
+                
+            # collectioninfo
+            collectioninfo_element = stage.find('proc:collectioninfo', ns)
+            if collectioninfo_element is not None:
+                stage_dict['collectioninfo'] = {}
+                field_elements = collectioninfo_element.findall('proc:field', ns)
+                for field_element in field_elements:
+                    if field_element is not None:
+                        stage_dict['collectioninfo']['field'] = {
+                            'name' : field_element.get('name'),
+                            'type' : field_element.get('type')
+                        }
+
+            # initialvalue
+            initialvalue_element = stage.find('proc:initialvalue', ns)
+            if initialvalue_element is not None:
+                row_elements = initialvalue_element.findall('proc:row', ns)
+                if len(row_elements) == 0:
+                    stage_dict['initialvalue'] = str(initialvalue_element.text)
+                else:
+                    stage_dict['initialvalue'] = list()
+                    for row_element in row_elements:
+                        field_elements = row_element.findall('proc:field', ns)
+                        for field_element in field_elements:
+                            if field_element is not None:
+                                field = {
+                                    'name' : field_element.get('name'),
+                                    'type' : field_element.get('type'),
+                                    'value' : field_element.get('value')
+                                }
+                                stage_dict['initialvalue'].append(field)
+                
+            child_process_dict['stage_list'].append(stage_dict)
+            
+        # appending the data to the root list
+        obj_dict['child_process'] = child_process_dict
+        file_root.append(obj_dict)
     
-    parent_process_list.append(process_file_info)
-    print('- Analyzed: ' + str(parent_process_list[0]['name']))
-    return parent_process_list
+    print('- Analyzed: ' + str(file_root[0]['name']))
+    return file_root
 
 def reset_db_filt():
     # mysql connection
@@ -416,7 +580,7 @@ def main():
         name = item[1]
         content = item[2]
         analyzed_list = analyze_and_filter(content)
-        id = str(analyzed_list[0]['id'])
+        id = str(analyzed_list[1]['id'])
         json_list = json.dumps(analyzed_list)
         push_to_db_filt(id, name, json_list)
 

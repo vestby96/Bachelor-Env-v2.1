@@ -10,7 +10,17 @@ $(document).ready(() => {
   // run initial functions
   build_left_process();
   path_scroll();
-  $('#display').draggable();
+
+  $('#display').mousedown(function(e){
+    if (!$('#left').hasClass('hiddenLeft')){
+      toggle_left();
+    };
+    $(this).addClass('dragging');
+    $(this).find('*').addClass('dragging');
+  }).mouseup(function(){
+    $(this).removeClass('dragging');
+    $(this).find('*').removeClass('dragging')
+  }).draggable().focus();
 
   $(window).resize(() => {
     path_scroll();
@@ -96,11 +106,11 @@ async function select_process(process_id, subsheet_id = ''){
       full_process_list = await get_full_process_list(process_id);
 
       // save the process globally
-      displayed_process = full_process_list[0];
-      process_info = full_process_list[1];
-      //displayed_object = full_process_list[2];
+      process_info = full_process_list[0];
+      displayed_process = full_process_list[1];
+      displayed_object = full_process_list[2];
 
-      console.log(displayed_process);
+      console.log(process_info, displayed_process, displayed_object);
 
       // make the process 'selected' in the margin
       let processes, process;
@@ -137,7 +147,7 @@ async function toggle_dropdown_content(process_id){
     // variables
     let div, title, subsheet_list, subsheet, i;
 
-    subsheet_list = local_process[0].child_process.subsheet_list;
+    subsheet_list = local_process[1].child_process.subsheet_list;
     div = $('<div>');
     div.attr({
       'class' : 'dropdownContent',
@@ -176,6 +186,30 @@ async function toggle_dropdown_content(process_id){
   parent.toggleClass('open');
 };
 
+function convert_to_image(str, element){
+  try{
+    let img = $('<img>');
+
+    let split = str.split(',');
+    str = split[3];
+
+    console.log(split[0] + ', ' + split[1] + ', ' + split[2]);
+
+    // denne må gjøres bedre slik at flere format fungerer
+    let start = 'data:image/png;base64,';
+    str = start + str;
+
+    img.attr({
+      'src' : str,
+      'width' : 100,
+      'height' : 100,
+    });
+    element.append(img);
+    return true;
+  } catch {
+    return false;
+  }
+};
 //---------------------- SVG -----------------------
 // draw an svg path from given start and end coordinates
 function draw_line(x1, y1, x2, y2, arrow = true, id = null, onfalse = false){
@@ -350,6 +384,15 @@ function draw_main_page(){
       };
     };
 
+    // Denne gjør at alle andre prosesser ikke fungerer
+    /*
+    try{
+      let source = displayed_object.child_process.stage_list[15].initialvalue[2].value;
+      convert_to_image(source, $('#displayCenter'));
+    } catch {
+      console.log('error with image');
+    };*/
+
     resize_page();
     scroll_into_view();
     draw_all_lines(true);
@@ -362,7 +405,7 @@ function draw_main_page(){
     //control_drag($('#display'), $('#displayParent'));
     //detect_display_scroll();
 };
-  
+
 function draw_subsheet(subsheet_id, path = true){
     // variables
     let name, stage_list, stage, subsheet_list, i, choices;
@@ -516,7 +559,7 @@ function draw_choices(id, choices, scale){
 function draw_subsheet_info(stage, scale){
     draw_process_info(stage, scale);
 };
-  
+
 function draw_process_info(stage, scale){
     let element, p;
     element = $('<div>');
@@ -556,10 +599,9 @@ function draw_process_info(stage, scale){
     element.append(p);
 
     $('#displayCenter').append(element);
-
     draw_hover_element(stage);
 };
-  
+
 function draw_block(stage, scale){
     let element, p;
 
@@ -693,9 +735,9 @@ function draw_hover_element(stage){
     hover_element.append(element);
   };
 
-  hover_btn = $('<button>');
+  hover_btn = $('<div>');
   hover_btn.attr({
-    'class' : 'expandButton',
+    'class' : 'button',
     'onclick' : 'toggle_expand_hover("' + stage.id + '")',
   }).append('More...');
   hover_element.append(hover_btn);
@@ -711,11 +753,11 @@ function toggle_expand_hover(stage_id){
     // hide all, and show selected elements inside hover
     hover_element.find('*').hide();
     hover_element.find('.stageType').show();
-    hover_element.find('.expandButton').show().empty().append('More...');
+    hover_element.find('.button').show().empty().append('More...');
   } else {
     // show all elements inside hover
     hover_element.find('*').show();
-    hover_element.find('.expandButton').empty().append('Less...');
+    hover_element.find('.button').empty().append('Less...');
   }
   // resize the hover element
   hover_element.css('height', 'fit-content').toggleClass('expanded');
@@ -726,44 +768,30 @@ function toggle_settings(){
 };
 
 function toggle_info(){
-  let page, section, links, button;
-  page = $('#infoPage');
-  section = $('#info');
-  links = $('.detail');
-  button = $('#infoButton');
-
-  if (!page.hasClass('show')){
-    section.css({
-      'width': '100%',
-      'height': '90%',
-    });
-    page.css({
-      'width': '150%',
-      'height': '150%',
-    });
-    button.addClass('xButton');
+  let info, wrapper, container;
+  info = $('#info'), wrapper = $('#wrapper'), container = $('#container');
+  if (info.hasClass('hiddenInfo')){
+    // show the info
+    info.removeClass('hiddenInfo');
+    wrapper.removeClass('hiddenWrapper');
     setTimeout(function(){
-      links.stop().slideDown(200);
-    }, 200);
+      container.removeClass('hiddenContainer');
+    }, 400);
   } else {
-    links.stop().slideUp(200);
-    button.removeClass('xButton');
-
+    // hide the info
     setTimeout(function(){
-      page.css({
-        'width': '0',
-        'height': '0',
-      });
-    }, 200);
-
-    setTimeout(function(){
-      section.css({
-        'width': '60px',
-        'height': '60px',
-      });
-      }, 700);
+      info.addClass('hiddenInfo');
+    }, 1000);
+    container.addClass('hiddenContainer');
+    wrapper.addClass('hiddenWrapper');
   };
-  page.toggleClass('show');
+};
+
+function toggle_detail(type){
+  let detail = $('.detail').filter('#' + type);
+  let button = detail.find('.icon');
+  detail.toggleClass('expanded');
+  button.toggleClass('rotate');
 };
 
 function toggle_search(){

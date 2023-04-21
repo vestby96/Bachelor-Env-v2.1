@@ -7,6 +7,7 @@
     --complimentary-color-2: #E65925;
     --complimentary-color-3: #0293CE;
     --complimentary-color-4: #C2B9AE;
+    /* this color is used as shadow effect */
     --complimentary-color-5: #000000;
     --display-background: #f6f0e3;
     --display-grid: #d3d3d3;
@@ -19,7 +20,7 @@
     box-sizing: border-box;
     font-family: "Open Sans", sans-serif;
     font-weight: 300;
-    scrollbar-color: var(--support-color-1);
+    scrollbar-color: var(--complimentary-color-5);
     scrollbar-width: 5px;
 }
 *:focus{
@@ -185,7 +186,7 @@ nav #settingsToggler #icon{
 }
 .processParent:hover{
     z-index: 1;
-    box-shadow: 0 0 10px 0 var(--complimentary-color-5) !important;
+    box-shadow: 0 0 10px 5px var(--complimentary-color-5) !important;
 }
 /* process title */
 .processTop{
@@ -213,7 +214,7 @@ nav #settingsToggler #icon{
     align-items: center;
 }
 .processTop .dropdownButton p{
-    width: max(50%, 50px);
+    width: 35%;
     aspect-ratio: 1 / 1;
     border-radius: 100%;
     background-image: url('../img/icons/icon_arrowup_orange.svg');
@@ -244,11 +245,10 @@ nav #settingsToggler #icon{
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
-    transition: all 0.2s;
 }
 .dropdownContent h4:hover{
     z-index: 1;
-    box-shadow: 0 0 5px 0 var(--complimentary-color-5);
+    box-shadow: 0 0 5px 2px var(--complimentary-color-5);
 }
 
 /* Right */
@@ -322,6 +322,7 @@ nav #settingsToggler #icon{
     text-overflow: ellipsis;
     overflow: hidden;
 }
+/* Display */
 #pageLabel{
     position: absolute;
     top: 35px;
@@ -338,25 +339,16 @@ nav #settingsToggler #icon{
     height: calc(100% - 35px);
     overflow: hidden;
     box-shadow: inset 0 0 10px 0 var(--complimentary-color-5);
+    background-color: var(--display-background);
 }
 #display{
     position: absolute;
     min-width: 2000px;
     min-height: 2000px;
+    cursor: grab;
 }
-#display::before{
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-right: 1px solid var(--display-grid);
-    border-bottom: 1px solid var(--display-grid);
-    background-size: 20px 20px;
-    background-image: 
-        linear-gradient(to right, var(--display-grid) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--display-grid) 1px, transparent 1px);
+#display:active{
+    cursor: grabbing;
 }
 svg{
     position: absolute;
@@ -373,6 +365,7 @@ svg{
     height: 0;
     transform: translate(-50%, -50%);
 }
+/* Hover */
 .hover{
     position: absolute;
     background-color: var(--display-background);
@@ -382,10 +375,10 @@ svg{
     white-space: nowrap;
     box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
-.hover button{
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
+.hover .button{
+    border: 1px solid var(--complimentary-color-5);
+    background-color: var(--complimentary-color-3);
+    margin-top: 5px;
 }
 .showHover{
     z-index: 4;
@@ -393,61 +386,137 @@ svg{
 
 /* styles for the info page */
 @media (min-width: 600px){
-    #details{ grid-template-columns: repeat(1, 1fr);}
+    #container{ grid-template-columns: repeat(1, 1fr);}
 }
 @media (min-width: 1010px){
-    #details{ grid-template-columns: repeat(2, 1fr);}
+    #container{ grid-template-columns: repeat(2, 1fr);}
 }
 @media (min-width: 1600px){
-    #details{ grid-template-columns: repeat(3, 1fr);}
+    #container{ grid-template-columns: repeat(3, 1fr);}
 }
 @media (min-width: 2200px){
-    #details{ grid-template-columns: repeat(4, 1fr);}
+    #container{ grid-template-columns: repeat(4, 1fr);}
 }
+
 #info{
-    z-index: 10;
-    width: 60px;
-    height: 60px;
     position: absolute;
-    top: 10%;
-    right: 0;
+    left: 0;
+    top: 10vh;
+    width: 100%;
+    height: 90vh;
+    z-index: 10;
     overflow: hidden;
+}
+#wrapper{
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
-    padding: 60px 0;
+    transition: all 1s;
 }
-#details{
-    overflow: auto;
+#wrapper::before{
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 150%;
+    height: 150%;
+    border-radius: 0 0 0 100%;
+    background-color: var(--primary-color);
+    z-index: -1;
+}
+.hiddenInfo{
+    z-index: -1 !important;
+}
+.hiddenWrapper{
+    transform: translate(150%, -150%) !important;
+}
+#container{
     display: grid;
     gap: 10px;
+    margin-bottom: 5%;
+    opacity: 1;
+    transition: all 0.2s;
+    overflow: auto;
 }
-.detail{
-    position: relative;
+.hiddenContainer{
+    opacity: 0 !important;
+}
+#container .detail{
     width: 500px;
-    border-radius: 10px;
-    z-index: 2;
-    display: none;
-    font-weight: 700;
+    height: 100px;
+    padding: 0 10px;
+    border-radius: 5px;
     background-color: var(--secondary-color);
     color: var(--font-color-light);
-    padding: 10px;
+    z-index: 1;
+    overflow: hidden;
+    transition: all 0.2s;
 }
-.detail summary{
-    border-bottom: 1px solid var(--primary-color);
-    padding-bottom: 5px;
+#container .detail.expanded{
+    height: 250px !important;
 }
-.detail .description{
-    padding-top: 5px;
+#container .detail.expanded .summary{
+    border-bottom: 1px solid var(--primary-color) !important;
 }
-#infoPage{
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-radius: 0 0 0 100%;
-    width: 0;
-    height: 0;
-    background-color: var(--primary-color);
-    transition: all 0.5s;
+#container .detail .summary{
+    position: relative;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+    text-transform: capitalize;
+}
+#container .detail .summary .icon{
+    width: 30px;
+    aspect-ratio: 1 / 1;
+    border-radius: 100%;
+    background-image: url('../img/icons/icon_arrowup_white.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 110%;
+    transform: rotate(90deg);
+}
+#container .detail .summary .icon.rotate{
+    transform: rotate(180deg) !important;
+}
+#container .detail .stageImage{
+    width: 100px;
+    aspect-ratio: 1 / 1;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--font-color-dark);
+}
+#container .detail .stageImage[name=decision]{
+    background-image: url('../img/stages/decision.png');
+}
+#container .detail .stageImage[name=anchor] p{
+    padding: 5px;
+    background-color: white;
+}
+#container .detail .stageImage[name=choice] p{
+    padding: 5px;
+    border-radius: 25%;
+    background-color: white;
+}
+#container .detail .stageImage[name=start] p, #container .detail .stageImage[name=end] p{
+    width: 40px;
+    height: 30px;
+    border-radius: 25%;
+    background-color: white;
+}
+#container .detail .description{
+    overflow: auto;
+    width: 100%;
+    height: 150px;
+    padding: 2%;
 }
 
 /* style the scrollbars */
@@ -478,6 +547,9 @@ svg{
     text-align: center;
     cursor: default;
     transform: translate(-50%, -50%);
+}
+.dragging{
+    cursor: grabbing !important;
 }
 [stage_type="Start"], [stage_type="End"]{
     padding: 10px;
@@ -559,6 +631,7 @@ svg{
     text-align: left;
     opacity: 0.5;
     z-index: 0;
+    cursor: grab;
 }
 .blockLabel{
     position: absolute;
@@ -566,6 +639,7 @@ svg{
     border: 1px solid black;
     cursor: default;
     font-size: 12px;
+    cursor: grab;
 }
 [stage_type="Collection"]{
     transform: translate(-50%, -50%) skew(-60deg);
