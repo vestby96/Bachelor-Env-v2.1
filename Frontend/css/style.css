@@ -170,6 +170,7 @@ nav #settingsToggler #icon{
 /* styles for the processes with displayed dropdowncontent */
 .open{
     background-color: var(--support-color-1);
+    color: var(--font-color-dark) !important;
 }
 .open .processTop:hover{
     z-index: 1;
@@ -182,11 +183,13 @@ nav #settingsToggler #icon{
     border-top: 1px solid var(--primary-color);
     border-bottom: 1px solid var(--primary-color);
     color: var(--font-color-light);
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 .processParent:hover{
     z-index: 1;
     box-shadow: 0 0 10px 5px var(--complimentary-color-5) !important;
+    background-color: var(--complimentary-color-4);
+    color: var(--font-color-dark);
 }
 /* process title */
 .processTop{
