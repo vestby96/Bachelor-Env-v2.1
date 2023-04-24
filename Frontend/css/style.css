@@ -389,20 +389,7 @@ svg{
     z-index: 4;
 }
 
-/* styles for the info page */
-@media (min-width: 600px){
-    #container{ grid-template-columns: repeat(1, 1fr);}
-}
-@media (min-width: 1010px){
-    #container{ grid-template-columns: repeat(2, 1fr);}
-}
-@media (min-width: 1600px){
-    #container{ grid-template-columns: repeat(3, 1fr);}
-}
-@media (min-width: 2200px){
-    #container{ grid-template-columns: repeat(4, 1fr);}
-}
-
+/* Info page */
 #info{
     position: absolute;
     left: 0;
@@ -438,8 +425,10 @@ svg{
     transform: translate(150%, -150%) !important;
 }
 #container{
-    display: grid;
-    gap: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
     margin-bottom: 5%;
     opacity: 1;
     transition: all 0.2s;
@@ -537,7 +526,7 @@ svg{
     background-color: var(--support-color-1);
 }
 
-/* style stages */
+/* Stages */
 .stage{
     position: absolute;
     display: flex;
