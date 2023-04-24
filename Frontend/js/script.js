@@ -1,5 +1,5 @@
 // global variables
-var scale, global_path, process_short_list, full_process_list, displayed_object, displayed_process, process_info, ip, port, customer, hoverTimeout;
+var scale, global_path, process_short_list, process_root, ip, port, customer, hoverTimeout;
 global_path = [{'id': '0', 'name' : 'Main Page'}];
 scale = 1;
 ip = 'localhost';
@@ -103,14 +103,9 @@ async function build_left_process(){
 async function select_process(process_id, subsheet_id = ''){
   try {
       // wait for api response
-      full_process_list = await get_full_process_list(process_id);
+      process_root = await get_full_process_list(process_id);
 
-      // save the process globally
-      process_info = full_process_list[0];
-      displayed_process = full_process_list[1];
-      displayed_object = full_process_list[2];
-
-      console.log(process_info, displayed_process, displayed_object);
+      console.log(process_root);
 
       // make the process 'selected' in the margin
       let processes, process;
@@ -147,7 +142,7 @@ async function toggle_dropdown_content(process_id){
     // variables
     let div, title, subsheet_list, subsheet, i;
 
-    subsheet_list = local_process[1].child_process.subsheet_list;
+    subsheet_list = local_process.process.subsheetlist;
     div = $('<div>');
     div.attr({
       'class' : 'dropdownContent',
@@ -171,18 +166,18 @@ async function toggle_dropdown_content(process_id){
     };
     parent.append(div);
     // slide down the content
-    p.css('transform', 'rotate(180deg)');
+    p.css('transform', 'rotateZ(0deg)');
     parent.find('.dropdownContent').slideDown(200);
   } else {
     // slide up the content
-    p.css('transform', 'rotate(90deg)');
+    p.css('transform', 'rotateZ(180deg)');
     parent.find('.dropdownContent').slideUp(200);
     // wait for the animation to end before removing the content
     setTimeout(function(){
       parent.find('.dropdownContent').remove();
     }, 250);
   };
-  // toggle the flex
+  // toggle the class
   parent.toggleClass('open');
 };
 
@@ -349,7 +344,7 @@ function draw_main_page(){
       'ids': new Array,
     };
 
-    stage_list = displayed_process.child_process.stage_list;
+    stage_list = process_root.process.stagelist;
     // draw the initial path
     empty_path();
     draw_path();
@@ -358,7 +353,7 @@ function draw_main_page(){
     //draw stages
     for (i = 0; i < stage_list.length; i++) {
       stage = stage_list[i];
-      if (!stage.subsheet_id) {
+      if (stage.subsheetid === '') {
         switch(stage.type) {
           case 'Block':
             draw_block(stage, scale);
@@ -396,14 +391,12 @@ function draw_main_page(){
     resize_page();
     scroll_into_view();
     draw_all_lines(true);
-    hover_effect();
     if (choices.ids.length > 0){
       for (i = 0; i < choices.ids.length; i++){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
-    //control_drag($('#display'), $('#displayParent'));
-    //detect_display_scroll();
+    hover_effect();
 };
 
 function draw_subsheet(subsheet_id, path = true){
@@ -416,7 +409,7 @@ function draw_subsheet(subsheet_id, path = true){
     };
   
     // find the subsheet
-    subsheet_list = displayed_process.child_process.subsheet_list;
+    subsheet_list = process_root.process.subsheetlist;
     name = 'Undefined';
     for (i = 0; i < subsheet_list.length; i++){
       if (subsheet_id == subsheet_list[i].id){
@@ -433,13 +426,13 @@ function draw_subsheet(subsheet_id, path = true){
     empty_page();
   
     // stage list
-    stage_list = displayed_process.child_process.stage_list;
+    stage_list = process_root.process.stagelist;
   
     // draw stages
     for (i = 0; i < stage_list.length; i++) {
       stage = stage_list[i];
-      if (stage.subsheet_id !== subsheet_id) {
-        continue; // Skip this stage if subsheet_id doesn't match
+      if (stage.subsheetid !== subsheet_id) {
+        continue; // Skip this stage if subsheetid doesn't match
       };
       switch(stage.type) {
         case 'Block':
@@ -468,12 +461,12 @@ function draw_subsheet(subsheet_id, path = true){
     resize_page();
     scroll_into_view();
     draw_all_lines(true);
-    hover_effect();
     if (choices.ids.length > 0){
       for (i = 0; i < choices.ids.length; i++){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
+    hover_effect();
     //control_drag($('#display'), $('#displayParent'));
     //detect_display_scroll();
 };
@@ -501,16 +494,21 @@ function draw_stage(stage, scale){
     'groupid' : stage.groupid,
     'stage_type' : stage.type,
   }).css({
-    'left' : parseInt(stage.x) * scale,
-    'top' : parseInt(stage.y) * scale,
-    'width' : parseInt(stage.w) * scale,
-    'height' : parseInt(stage.h) * scale,
-    'color' : stage.font_color,
-    'font-size' : parseInt(stage.font_size) * scale,
+    'left' : stage.x * scale,
+    'top' : stage.y * scale,
+    'color' : stage.fontcolor,
+    'font-size' : stage.fontsize * scale,
   }).append(p);
 
+  if (stage.w !== null && stage.w !== null){
+    element.css({
+      'width' : stage.w * scale,
+      'height' : stage.h * scale,
+    });
+  };
+
   if (stage.type === 'SubSheet'){
-    element.attr('onclick', 'draw_subsheet("' + stage.process_id + '")');
+    element.attr('onclick', 'draw_subsheet("' + stage.processid + '")');
   } else if (stage.type === 'Data'){
     element.css({
       'width' : element.outerWidth() * 0.8,
@@ -520,9 +518,17 @@ function draw_stage(stage, scale){
 
   $('#displayCenter').append(element);
 
+  if (stage.w === null && stage.h === null) {
+    element = $('#displayCenter').find('#' + stage.id);
+    element.css({
+      'width' : element.outerWidth() * scale,
+      'height' : element.outerHeight() * scale,
+    });
+  };
+
   if (stage.type !== 'Anchor'){
     draw_hover_element(stage);
-  }
+  };
 };
 
 function draw_choices(id, choices, scale){
@@ -536,28 +542,60 @@ function draw_choices(id, choices, scale){
   if (path !== undefined){
     for (i = 0; i < choices.length; i++){
       point = {
-        'x': Math.round(path.getPointAtLength(choices[i].distance).x) - center_x,
-        'y': Math.round(path.getPointAtLength(parseInt(choices[i].distance)).y) - center_y,
+        'x': path.getPointAtLength(choices[i].distance).x - center_x,
+        'y': path.getPointAtLength(choices[i].distance).y - center_y,
       };
       element = $('<div>');
       element.attr({
+        'name' : choices[i].name,
+        'id' : id + choices[i].name,
         'class' : 'stage',
         'ontrue' : choices[i].ontrue,
         'stage_type' : 'Choice',
+        'title' : 'Choice: ' + choices[i].name,
       }).css({
         'left' : point.x,
         'top' : point.y * scale,
       });
       $('#displayCenter').append(element);
+
+      // hover element
     };
     draw_choice_lines();
   } else {
-    console.log('Path not found');
+    console.log('choice path not found');
   };
 };
 
 function draw_subsheet_info(stage, scale){
-    draw_process_info(stage, scale);
+  let element, p, i, subsheet;
+  element = $('<div>');
+  element.attr({
+    'class' : 'stage',
+    'id' : stage.id,
+    'onsuccess' : stage.onsuccess,
+    'stage_type' : stage.type,
+  }).css({
+    'left' : stage.x * scale,
+    'top' : stage.y * scale,
+    'width' : stage.w * scale,
+    'height' : stage.h * scale,
+  });
+
+  // find the subsheet
+  for (i = 0; i < process_root.process.subsheetlist.length; i++){
+    subsheet = process_root.process.subsheetlist[i] ? process_root.process.subsheetlist[i].id == stage.id : undefined;
+  };
+
+  p = $('<p>');
+  p.css({
+    'border-bottom' : '1px solid black',
+    'padding' : '0 2px',
+  }).append(subsheet.name);
+  element.append(p);
+
+  $('#displayCenter').append(element);
+  draw_hover_element(stage);
 };
 
 function draw_process_info(stage, scale){
@@ -569,23 +607,23 @@ function draw_process_info(stage, scale){
       'onsuccess' : stage.onsuccess,
       'stage_type' : stage.type,
     }).css({
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
+      'left' : stage.x * scale,
+      'top' : stage.y * scale,
+      'width' : stage.w * scale,
+      'height' : stage.h * scale,
     });
 
     p = $('<p>');
     p.css({
       'border-bottom' : '1px solid black',
       'padding' : '0 2px',
-    }).append(process_info.name);
+    }).append(process_root.info.name);
     element.append(p);
 
     p = $('<p>');
     p.css({
       'padding' : '0 2px',
-    }).append(displayed_process.child_process.narrative);
+    }).append(process_root.process.narrative);
     element.append(p);
 
     p = $('<p>');
@@ -595,7 +633,7 @@ function draw_process_info(stage, scale){
       'left' : '0',
       'border-top' : '1px solid black',
       'padding' : '0 2px',
-    }).append('Created: ' + process_info.user_created_by + ', at ' + process_info.created);
+    }).append('Created: ' + process_root.info.user_created_by + ', at ' + process_root.info.created);
     element.append(p);
 
     $('#displayCenter').append(element);
@@ -610,8 +648,8 @@ function draw_block(stage, scale){
       'class' : 'blockLabel',
       'stage_type' : 'BlockLabel',
     }).css({
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
+      'left' : stage.x * scale,
+      'top' : stage.y * scale,
       'color' : stage.font_color,
       'font-size' : stage.font_size,
     }).append(stage.name);
@@ -623,10 +661,10 @@ function draw_block(stage, scale){
       'onsuccess' : stage.onsuccess,
       'stage_type' : stage.type,
     }).css({
-      'left' : (parseInt(stage.x) + parseInt(stage.w)/2) * scale,
-      'top' : (parseInt(stage.y) + parseInt(stage.h)/2) * scale,
-      'width' : parseInt(stage.w) * scale,
-      'height' : parseInt(stage.h) * scale,
+      'left' : (stage.x + stage.w/2) * scale,
+      'top' : (stage.y + stage.h/2) * scale,
+      'width' : stage.w * scale,
+      'height' : stage.h * scale,
     });
     $('#displayCenter').append(element);
     $('#displayCenter').append(p);
@@ -648,10 +686,10 @@ function draw_collection(stage, scale){
       'onsuccess' : stage.onsuccess,
       'stage_type' : stage.type,
     }).css({
-      'left' : parseInt(stage.x) * scale,
-      'top' : parseInt(stage.y) * scale,
-      'width' : parseInt(stage.w) * 0.8 * scale,
-      'height' : parseInt(stage.h) * 0.9 * scale,
+      'left' : stage.x * scale,
+      'top' : stage.y * scale,
+      'width' : stage.w * 0.8 * scale,
+      'height' : stage.h * 0.9 * scale,
     }).append(child);
     $('#displayCenter').append(element);
 
@@ -659,11 +697,11 @@ function draw_collection(stage, scale){
 };
 
 function draw_hover_element(stage){
-  let hover_element, hover_btn, hover_x, hover_y, element, to_stage;
+  let hover_element, p, hover_x, hover_y, element, to_stage, i, j;
 
   hover_x = $('#' + stage.id).position().left;
   hover_y = $('#' + stage.id).position().top + $('#' + stage.id).outerHeight() + 1;
-  
+
   hover_element = $('<div>');
   hover_element.attr({
     'class' : 'hover',
@@ -674,73 +712,136 @@ function draw_hover_element(stage){
   });
 
   element = $('<p>');
-  element.attr('class', 'stageType').append('Type: ' + stage.type);
+  p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('Type:');
+  element.attr('class', 'stageType').append(p, ' ' + stage.type);
   hover_element.append(element);
 
   if (stage.type === 'ChoiceStart'){
     element = $('<p>');
-    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.groupid === currentObj.groupid && stage !== currentObj});
-    element.attr('id', 'groupid').append('Otherwise: ' + to_stage[0].name).hide();
+    to_stage = process_root.process.stagelist.filter(function(currentObj){return stage.groupid === currentObj.groupid && stage !== currentObj});
+    p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('Otherwise:');
+    element.attr('id', 'groupid').append(p, ' ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
   if (stage.onsuccess){
     element = $('<p>');
-    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.onsuccess === currentObj.id});
+    p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('Success:');
+    to_stage = process_root.process.stagelist.filter(function(currentObj){return stage.onsuccess === currentObj.id});
     while (to_stage[0].type === 'Anchor'){
       let temp_stage = to_stage[0];
-      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+      to_stage = process_root.process.stagelist.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
     };
-    element.attr('id', 'onsuccess').append('Success: ' + to_stage[0].name).hide();
+    element.attr('id', 'onsuccess').append(p, ' ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
   if (stage.ontrue){
     element = $('<p>');
-    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.ontrue === currentObj.id});
+    p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('True:');
+    to_stage = process_root.process.stagelist.filter(function(currentObj){return stage.ontrue === currentObj.id});
     while (to_stage[0].type === 'Anchor'){
       let temp_stage = to_stage[0];
-      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+      to_stage = process_root.process.stagelist.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
     };
-    element.attr('id', 'ontrue').append('True: ' + to_stage[0].name).hide();
+    element.attr('id', 'ontrue').append(p, ' ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
   if (stage.onfalse){
     element = $('<p>');
-    to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return stage.onfalse === currentObj.id});
+    p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('False:');
+    to_stage = process_root.process.stagelist.filter(function(currentObj){return stage.onfalse === currentObj.id});
     while (to_stage[0].type === 'Anchor'){
       let temp_stage = to_stage[0];
-      to_stage = displayed_process.child_process.stage_list.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
+      to_stage = process_root.process.stagelist.filter(function(currentObj){return temp_stage.onsuccess === currentObj.id});
     };
-    element.attr('id', 'onfalse').append('False: ' + to_stage[0].name).hide();
+    element.attr('id', 'onfalse').append(p, ' ' + to_stage[0].name).hide();
     hover_element.append(element);
   };
 
-  if (stage.private){
+  if (stage.narrative){
     element = $('<p>');
-    element.attr('id', 'private').append('Private: ' + stage.private).hide();
+    p = $('<p>').css('font-weight', 'bold').append('Narrative:');
+    element.attr('id', 'narrative').append(p, stage.narrative).hide();
     hover_element.append(element);
   };
 
-  if (stage.alwaysinit){
+  if (stage.datatype){
     element = $('<p>');
-    element.attr('id', 'alwaysinit').append('Alwaysinit: ' + stage.alwaysinit).hide();
+    p = $('<p>').css({'font-weight': 'bold', 'display': 'inline-block'}).append('Datatype:');
+    element.attr('id', 'datatype').append(p, ' ' + stage.datatype).hide();
     hover_element.append(element);
   };
 
-  if (stage.loginhibit){
+  if (stage.collectioninfo && stage.collectioninfo.length > 0){
+    p = $('<p>').css('font-weight', 'bold').append('Collection info:');
     element = $('<p>');
-    element.attr('id', 'loginhibit').append('Loginhibit: ' + stage.loginhibit).hide();
+    element.attr('id', 'collectioninfo').append(p);
+    for (i = 0; i < stage.collectioninfo.length; i++){
+      if (stage.collectioninfo[i].type){element.append('Type: ' + stage.collectioninfo[i].type)};
+      if (stage.collectioninfo[i].name){element.append(', Name: ' + stage.collectioninfo[i].name)};
+      if (stage.collectioninfo[i].value){element.append(', Value: ' + stage.collectioninfo[i].value)};
+      element.append($('<br>'));
+    };
+    element.hide();
     hover_element.append(element);
   };
 
-  hover_btn = $('<div>');
-  hover_btn.attr({
+  if (stage.initialvalue && stage.initialvalue.length > 0){
+    p = $('<p>').css('font-weight', 'bold').append('Initialvalue:');
+    element = $('<p>');
+    element.attr('id', 'initialvalue').append(p);
+    for (i = 0; i < stage.initialvalue.length; i++){
+      element.append('Row ' + (i + 1) + '- ');
+      for (j = 0; j < stage.initialvalue[i].length; j++){
+        if (stage.initialvalue[i][j].type){element.append('Type: ' + stage.initialvalue[i][j].type)};
+        if (stage.initialvalue[i][j].name){element.append(', Name: ' + stage.initialvalue[i][j].name)};
+        if (stage.initialvalue[i][j].value){element.append(', Value: ' + stage.initialvalue[i][j].value)};
+        element.append($('<br>'));
+      };
+    };
+    element.hide();
+    hover_element.append(element);
+  };
+
+  if (stage.inputs){
+    element = $('<p>');
+    p = $('<p>');
+    p.css('font-weight', 'bold').append('Inputs: ');
+    element.attr('id', 'inputs').append(p);
+    for (i = 0; i < stage.inputs.length; i++){
+      if (stage.inputs[i].type){element.append('Type: ' + stage.inputs[i].type)};
+      if (stage.inputs[i].friendlyname){element.append(', Name: ' + stage.inputs[i].friendlyname)} else {element.append(', Name: ' + stage.inputs[i].name)};
+      if (stage.inputs[i].stage){element.append(', Stage: ' + stage.inputs[i].stage)};
+      if (stage.inputs[i].expr){element.append(', Expr: ' + stage.inputs[i].expr)};
+      element.append($('<br>'));
+    };
+    element.hide();
+    hover_element.append(element);
+  };
+
+  if (stage.outputs){
+    element = $('<p>');
+    p = $('<p>');
+    p.css('font-weight', 'bold').append('Outputs: ');
+    element.attr('id', 'outputs').append(p);
+    for (i = 0; i < stage.outputs.length; i++){
+      if (stage.outputs[i].type){element.append('Type: ' + stage.outputs[i].type)};
+      if (stage.outputs[i].friendlyname){element.append(', Name: ' + stage.outputs[i].friendlyname)} else {element.append(', Name: ' + stage.outputs[i].name)};
+      if (stage.outputs[i].stage){element.append(', Stage: ' + stage.outputs[i].stage)};
+      element.append($('<br>'));
+    };
+    element.hide();
+    hover_element.append(element);
+  };
+
+  element = $('<div>');
+  element.attr({
     'class' : 'button',
     'onclick' : 'toggle_expand_hover("' + stage.id + '")',
   }).append('More...');
-  hover_element.append(hover_btn);
+  hover_element.append(element);
 
   $('#displayCenter').append(hover_element);
 };
@@ -752,7 +853,7 @@ function toggle_expand_hover(stage_id){
   if (hover_element.hasClass('expanded')){
     // hide all, and show selected elements inside hover
     hover_element.find('*').hide();
-    hover_element.find('.stageType').show();
+    hover_element.find('.stageType').show().find('*').show();
     hover_element.find('.button').show().empty().append('More...');
   } else {
     // show all elements inside hover

@@ -14,12 +14,14 @@ origins = [
     'http://192.168.0.40:8080',
     'http://192.168.0.101:5500',
     'http://localhost:8080',
+    'http://localhost:5500',
     'http://127.0.0.1:5500',
+    'http://192.168.0.101:5500',
 ]
 # origins can access these methods
 methods = [
-    'return_customer()',
-    'return_customer_process()'
+    'return_process_names()',
+    'return_process()',
 ]
 # adding the control parameters to the api app
 app.add_middleware(
@@ -35,7 +37,7 @@ app.add_middleware(
 def return_process_names(customer_name: str):
     try:
         # input validation
-        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]+$')
+        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
         if re.fullmatch(pat, customer_name):
             name_list = get_data_from_db(customer_name)
             return JSONResponse(name_list)
