@@ -13,7 +13,7 @@ services:
     ports:
       - 3306:3306
     environment:
-      - MYSQL_ROOT_PASSWORD=Password-123
+      - MYSQL_ROOT_PASSWORD=0f996ec3f9f5b193b4e3a6ca135e40c1a89e8f9d2289144b4af2fb08538fc465
     volumes:
       - mysql-sens:/var/lib/mysql
       - mysql-sens_config:/etc/mysql
@@ -24,7 +24,7 @@ services:
     ports:
       - 3307:3307
     environment:
-      - MYSQL_ROOT_PASSWORD=Password-123
+      - MYSQL_ROOT_PASSWORD=0f996ec3f9f5b193b4e3a6ca135e40c1a89e8f9d2289144b4af2fb08538fc465
     volumes:
       - mysql-filt:/var/lib/mysql
       - mysql-filt_config:/etc/mysql

@@ -2,13 +2,19 @@ import mysql.connector
 import xml.etree.ElementTree as ET
 import json
 from datetime import date
+import hashlib
+
+def hash_passwd(passwd: str) -> str:
+    return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
+
+hashed_passwd = hash_passwd('gruppe-64')
 
 def pull_from_db_sens(customer_name):
     # connect to sensitive db files
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database=customer_name
     )
     cursor = mydb.cursor()
@@ -29,7 +35,7 @@ def reset_db_filt():
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password="Password-123"
+        password=hashed_passwd,
     )
     
     # rebuild the database
@@ -42,7 +48,7 @@ def reset_db_filt():
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database="customer"
     )
     
@@ -58,7 +64,7 @@ def push_to_db_filt(id: str, name: str, content: str):
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database="customer"
     )
     cursor = mydb.cursor()
@@ -606,7 +612,7 @@ def analyze(xml_string: str):
     
     return dict_root
 
-def main():
+if __name__ == '__main__':
     # printing the time and date
     today = date.today()
     print("Today's date:", today)
@@ -619,5 +625,3 @@ def main():
         id = str(dict_root['process']['id'])
         json_list = json.dumps(dict_root)
         push_to_db_filt(id, name, json_list)
-
-main()

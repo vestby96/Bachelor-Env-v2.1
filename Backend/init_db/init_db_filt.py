@@ -1,11 +1,17 @@
 import mysql.connector
+import hashlib
+
+def hash_passwd(passwd: str) -> str:
+    return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
+
+hashed_passwd = hash_passwd('gruppe-64')
 
 def init_db_filt():
     # mysql connection
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password="Password-123"
+        password=hashed_passwd,
     )
     
     # rebuild the database
@@ -18,7 +24,7 @@ def init_db_filt():
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database="customer"
     )
     
@@ -30,4 +36,5 @@ def init_db_filt():
     
     print('db-filt initalized')
     
-init_db_filt()
+if __name__ == '__main__':
+    init_db_filt()

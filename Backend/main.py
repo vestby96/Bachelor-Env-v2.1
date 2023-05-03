@@ -5,6 +5,12 @@ from fastapi.responses import JSONResponse
 import mysql.connector
 import json
 import re
+import hashlib
+
+def hash_passwd(passwd: str) -> str:
+    return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
+
+hashed_passwd = hash_passwd('gruppe-64')
 
 # fastapi app
 app = FastAPI()
@@ -72,8 +78,8 @@ def get_data_from_db(customer_name: str, process_id: str = ''):
             mydb = mysql.connector.connect(
                 host="mysqldb-filt",
                 user="root",
-                password="Password-123",
-                database=customer_name
+                password=hashed_passwd,
+                database=customer_name,
             )
             cursor = mydb.cursor()
             # selecting all content from the xml table
@@ -100,8 +106,8 @@ def get_data_from_db(customer_name: str, process_id: str = ''):
             mydb = mysql.connector.connect(
                 host="mysqldb-filt",
                 user="root",
-                password="Password-123",
-                database=customer_name
+                password=hashed_passwd,
+                database=customer_name,
             )
             cursor = mydb.cursor()
             # selecting all content from the xml table

@@ -1,12 +1,17 @@
 import mysql.connector
-import xml.etree.ElementTree as ET
+import hashlib
+
+def hash_passwd(passwd: str) -> str:
+    return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
+
+hashed_passwd = hash_passwd('gruppe-64')
 
 def init_db_sens():
     # mysql connection
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
-        password="Password-123"
+        password=hashed_passwd,
     )
     
     # rebuild the database
@@ -19,7 +24,7 @@ def init_db_sens():
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database="customer"
     )
     
@@ -37,7 +42,7 @@ def insert_to_db_sens(name: str, content: str):
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
-        password="Password-123",
+        password=hashed_passwd,
         database="customer"
     )
     
@@ -54,22 +59,23 @@ def insert_to_db_sens(name: str, content: str):
 
     return f"{cursor.rowcount}, was inserted."
 
-# reset the database   
-init_db_sens()
+if __name__ == '__main__':
+    # reset the database
+    init_db_sens()
 
-# reading the xml files and commiting it to the database
-f = open("/code/init_db/Test-Process-Release2815.xml", "r")
-xml_string = f.read()
-insert_to_db_sens('test process', xml_string)
+    # reading the xml files and commiting it to the database
+    f = open("/code/init_db/Test-Process-Release2815.xml", "r")
+    xml_string = f.read()
+    insert_to_db_sens('test process', xml_string)
 
-f = open("/code/init_db/test.xml", "r")
-xml_string = f.read()
-insert_to_db_sens('test process 2', xml_string)
+    f = open("/code/init_db/test.xml", "r")
+    xml_string = f.read()
+    insert_to_db_sens('test process 2', xml_string)
 
-f = open("/code/init_db/rotete-prosess.xml", "r")
-xml_string = f.read()
-insert_to_db_sens('Rotete prosess', xml_string)
+    f = open("/code/init_db/rotete-prosess.xml", "r")
+    xml_string = f.read()
+    insert_to_db_sens('Rotete prosess', xml_string)
 
-f = open("/code/init_db/object-with-image.xml", "r")
-xml_string = f.read()
-insert_to_db_sens('Object with image', xml_string)
+    f = open("/code/init_db/object-with-image.xml", "r")
+    xml_string = f.read()
+    insert_to_db_sens('Object with image', xml_string)
