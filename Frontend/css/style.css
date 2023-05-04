@@ -40,7 +40,7 @@
 .button:active{
     transform: scale(0.95);
 }
-.button:hover{
+.button:hover, .button:focus{
     box-shadow: 0 0 10px 0 var(--complimentary-color-5) !important;
 }
 html, body{
@@ -187,7 +187,7 @@ nav #settingsToggler #icon{
     color: var(--font-color-light);
     transition: all 0.2s;
 }
-.processParent:hover{
+.processParent:hover, .processParent:has(h3:focus){
     z-index: 1;
     box-shadow: 0 0 10px 5px var(--complimentary-color-5) !important;
     background-color: var(--complimentary-color-4);
@@ -225,11 +225,11 @@ nav #settingsToggler #icon{
     background-image: url('../img/icons/icon_arrowup_orange.svg');
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 118%;
+    background-size: 110%;
     transform: rotateZ(180deg);
     transition: all 0.2s;
 }
-.processTop .dropdownButton p:hover{
+.processTop .dropdownButton p:hover, .processTop .dropdownButton:focus > p{
     box-shadow: 0 0 10px 0 var(--complimentary-color-5);
 }
 /* process dropdowncontent */

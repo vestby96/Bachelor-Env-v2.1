@@ -18,18 +18,18 @@
     <nav>
         <div id="logo"></div>
         
-        <div class="button" onclick="toggle_search()" id="searchToggler" title="Show or hide the search field">Search<p></p></div>
+        <div class="button" onkeypress="toggle_search()" onclick="toggle_search()" id="searchToggler" title="Show or hide the search field" tabindex="0">Search<p></p></div>
         
-        <div class="button" onclick="toggle_settings()" id="settingsToggler" title="Show or hide the settings">Settings<p id="icon"></p></div>
+        <div class="button" onkeypress="toggle_settings()" onclick="toggle_settings()" id="settingsToggler" title="Show or hide the settings" tabindex="0">Settings<p id="icon"></p></div>
         
-        <div class="button" onclick="toggle_info()" id="infoToggler" title="Show or hide the display legend">Information<p></p></div>
+        <div class="button" onkeypress="toggle_info()" onclick="toggle_info()" id="infoToggler" title="Show or hide the display legend" tabindex="0">Information<p></p></div>
     </nav>
 
     <div id="settings">
         <div id="scale">
             <p>Scale the objects</p>
             <input type="range" id="scaleInput" min="0.1" max="10" onchange="change_scale()">
-            <div class="button" onclick="reset_scale()">Reset</div>
+            <div class="button" onkeypress="reset_scale()" onclick="reset_scale()">Reset</div>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
     </div>
 
     <div class="wrapper" id="right">
-        <div class="button" id="toggleLeftButton" onclick="toggle_left()" title="Toggle the process list"><p></p></div>
+        <div class="button" id="toggleLeftButton" onkeypress="toggle_left()" onclick="toggle_left()" title="Toggle the process list" tabindex="0"><p></p></div>
         <div id="path"></div>
         <h3 id="pageLabel" title="Current Page"></h3>
         <div id="displayParent">
@@ -70,7 +70,7 @@
             <div id="container">
                 <div class="detail" id="decision">
                     <div class="summary">
-                        <div class="icon button" onclick="toggle_detail('decision')"></div>
+                        <div class="icon button" onkeypress="toggle_detail('decision')" onclick="toggle_detail('decision')"></div>
                         <h3>decision</h3>
                         <div class="stageImage" name="decision"></div>
                     </div>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="detail" id="anchor">
                     <div class="summary">
-                        <div class="icon button" onclick="toggle_detail('anchor')"></div>
+                        <div class="icon button" onkeypress="toggle_detail('anchor')" onclick="toggle_detail('anchor')"></div>
                         <h3>anchor</h3>
                         <div class="stageImage" name="anchor"><p></p></div>
                     </div>
@@ -94,7 +94,7 @@
                 </div>
                 <div class="detail" id="choice">
                     <div class="summary">
-                        <div class="icon button" onclick="toggle_detail('choice')"></div>
+                        <div class="icon button" onkeypress="toggle_detail('choice')" onclick="toggle_detail('choice')"></div>
                         <h3>choice</h3>
                         <div class="stageImage" name="choice">
                             <p></p>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="detail" id="start">
                     <div class="summary">
-                        <div class="icon button" onclick="toggle_detail('start')"></div>
+                        <div class="icon button" onkeypress="toggle_detail('start')" onclick="toggle_detail('start')"></div>
                         <h3>start</h3>
                         <div class="stageImage" name="start">
                             <p></p>
@@ -122,7 +122,7 @@
                 </div>
                 <div class="detail" id="end">
                     <div class="summary">
-                        <div class="icon button" onclick="toggle_detail('end')"></div>
+                        <div class="icon button" onkeypress="toggle_detail('end')" onclick="toggle_detail('end')"></div>
                         <h3>end</h3>
                         <div class="stageImage" name="end">
                             <p></p>

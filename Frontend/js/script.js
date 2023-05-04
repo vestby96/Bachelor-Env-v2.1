@@ -80,13 +80,17 @@ async function build_left_process(){
     icon = $('<p>');
 
     title.attr({
+      'onkeypress' : 'select_process("' + process.id + '")',
       'onclick' : 'select_process("' + process.id + '")',
       'title' : 'Display process',
+      'tabindex' : '0',
     }).append(process.name);
     button.attr({
       'class' : 'dropdownButton',
+      'onkeypress' : 'toggle_dropdown_content("' + process.id + '")',
       'onclick' : 'toggle_dropdown_content("' + process.id + '")',
       'title' : 'List process content',
+      'tabindex' : '0',
     }).append(icon);
     div.attr({
       'class' : 'processTop',
@@ -264,7 +268,7 @@ function draw_all_lines(remove_all = false){
 
   $('.stage').each((i, start_element) => {
     start = $(start_element);
-    if (start.attr('onsuccess') !== undefined || start.attr('ontrue') !== undefined || start.attr('onfalse') !== undefined){
+    if (start.attr('stage_type') != 'ChoiceStart' && (start.attr('onsuccess') !== undefined || start.attr('ontrue') !== undefined || start.attr('onfalse') !== undefined)){
       $('.stage').each((j, end_element) => {
         end = $(end_element);
         if (start.attr('onsuccess') === end.attr('id') || start.attr('ontrue') === end.attr('id') || start.attr('onfalse') === end.attr('id')){
@@ -865,11 +869,21 @@ function toggle_expand_hover(stage_id){
 };
 
 function toggle_settings(){
+  let scaleInput = $('#scaleInput'), scaleButton = $('#scale .button');
+  if (!$('#settings').hasClass('showSettings')){
+    // show settings
+    scaleInput.attr('tabindex', 0);
+    scaleButton.attr('tabindex', 0);
+  } else {
+    // hide settings
+    scaleInput.attr('tabindex', -1);
+    scaleButton.attr('tabindex', -1);
+  }
   $('#settings').toggleClass('showSettings');
 };
 
 function toggle_info(){
-  let info, wrapper, container;
+  let info, wrapper, container, details = $('.summary');
   info = $('#info'), wrapper = $('#wrapper'), container = $('#container');
   if (info.hasClass('hiddenInfo')){
     // show the info
@@ -878,6 +892,10 @@ function toggle_info(){
     setTimeout(function(){
       container.removeClass('hiddenContainer');
     }, 400);
+    details.each(function(){
+      summary = $(this);
+      summary.find('.icon').attr('tabindex', 0);
+    });
   } else {
     // hide the info
     setTimeout(function(){
@@ -885,6 +903,10 @@ function toggle_info(){
     }, 1000);
     container.addClass('hiddenContainer');
     wrapper.addClass('hiddenWrapper');
+    details.each(function(){
+      summary = $(this);
+      summary.find('.icon').attr('tabindex', -1);
+    });
   };
 };
 
