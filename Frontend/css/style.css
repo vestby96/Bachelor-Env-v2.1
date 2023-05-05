@@ -315,6 +315,7 @@ nav #settingsToggler #icon{
     align-items: center;
     padding: 5px 5px 5px 5px;
     transition: box-shadow 0.2s linear;
+    cursor: pointer;
 }
 .pathButton:hover{
     z-index: 1;
