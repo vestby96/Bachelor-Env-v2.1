@@ -17,17 +17,11 @@ app = FastAPI()
 
 # control access origin http
 origins = [
-    'http://192.168.0.40:8080',
-    'http://192.168.0.101:5500',
-    'http://localhost:8080',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://192.168.0.101:5500',
+    'http://localhost:8080', # frontend
 ]
 # origins can access these methods
 methods = [
-    'return_process_names()',
-    'return_process()',
+    'GET',
 ]
 # adding the control parameters to the api app
 app.add_middleware(
