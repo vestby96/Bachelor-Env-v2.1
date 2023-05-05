@@ -312,11 +312,22 @@ def analyze(xml_string: str):
                     stage_dict['initialvalue'].append([])
                     fields = row.findall('.//proc:field', ns)
                     for field in fields:
-                        field_dict = {
-                            'name' : field.get('name'),
-                            'type' : field.get('type'),
-                            'value' : field.get('value'),
-                        }
+                        if field.get('type') == 'image':
+                            image_list = field.get('value').split(',')
+                            image = image_list[3]
+                            image_list.pop()
+                            field_dict = {
+                                'name' : field.get('name'),
+                                'type' : field.get('type'),
+                                'value' : image,
+                                'other' : ','.join(image_list),
+                            }
+                        else:
+                            field_dict = {
+                                'name' : field.get('name'),
+                                'type' : field.get('type'),
+                                'value' : field.get('value'),
+                            }
                         stage_dict['initialvalue'][i].append(field_dict)
             
             # resource
@@ -568,11 +579,22 @@ def analyze(xml_string: str):
                     stage_dict['initialvalue'].append([])
                     fields = row.findall('.//proc:field', ns)
                     for field in fields:
-                        field_dict = {
-                            'name' : field.get('name'),
-                            'type' : field.get('type'),
-                            'value' : field.get('value'),
-                        }
+                        if field.get('type') == 'image':
+                            image_list = field.get('value').split(',')
+                            image = image_list[3]
+                            image_list.pop()
+                            field_dict = {
+                                'name' : field.get('name'),
+                                'type' : field.get('type'),
+                                'value' : image,
+                                'other' : ','.join(image_list),
+                            }
+                        else:
+                            field_dict = {
+                                'name' : field.get('name'),
+                                'type' : field.get('type'),
+                                'value' : field.get('value'),
+                            }
                         stage_dict['initialvalue'][i].append(field_dict)
             
             # resource

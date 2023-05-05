@@ -50,11 +50,13 @@ def return_process_names(customer_name: str):
 @app.get('/{customer_name}/{process_id}')
 def return_process(customer_name: str, process_id: str):
     try:
-        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]+$')
+        patCustomer = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
+        # very specific regex for the process id
+        patProcess = re.compile('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
         # input validation
-        if re.fullmatch(pat, customer_name) is None:
+        if re.fullmatch(patCustomer, customer_name) is None:
             return JSONResponse({'Error' : 'customer input validation failed'})
-        elif re.fullmatch(pat, process_id) is None:
+        elif re.fullmatch(patProcess, process_id) is None:
             return JSONResponse({'Error' : 'process input validation failed'})
         else:
             content = get_data_from_db(customer_name, process_id)
@@ -77,7 +79,7 @@ def get_data_from_db(customer_name: str, process_id: str = ''):
             )
             cursor = mydb.cursor()
             # selecting all content from the xml table
-            cursor.execute(f'SELECT processId, name FROM xml')
+            cursor.execute('SELECT processId, name FROM xml')
             # storing the result from db in variable
             db_list = cursor.fetchall()
             cursor.close()

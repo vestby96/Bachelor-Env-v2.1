@@ -383,15 +383,6 @@ function draw_main_page(){
       };
     };
 
-    // Denne gjør at alle andre prosesser ikke fungerer
-    /*
-    try{
-      let source = displayed_object.child_process.stage_list[15].initialvalue[2].value;
-      convert_to_image(source, $('#displayCenter'));
-    } catch {
-      console.log('error with image');
-    };*/
-
     resize_page();
     scroll_into_view();
     draw_all_lines(true);
@@ -471,8 +462,6 @@ function draw_subsheet(subsheet_id, path = true){
       };
     };
     hover_effect();
-    //control_drag($('#display'), $('#displayParent'));
-    //detect_display_scroll();
 };
 
 //---------------------- Draw Stages ----------------------
