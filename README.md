@@ -10,4 +10,4 @@ To start the application
     - $python /code/update_db.py
 
 Now the app is running with the example XML-files, we created during development
-Frontend on port 8080, and backend on port 8000
+frontend on port 8080, and backend on port 8000
