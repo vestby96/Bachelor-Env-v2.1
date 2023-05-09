@@ -1,12 +1,4 @@
-services:
-  python:
-    build: .
-    container_name: python-server
-    ports:
-      - 8000:8000
-    volumes:
-      - ./Backend:/code
-  
+services:  
   mysqldb-sens:
     image: mysql
     container_name: mysqldb-sens-server
@@ -28,6 +20,14 @@ services:
     volumes:
       - mysql-filt:/var/lib/mysql
       - mysql-filt_config:/etc/mysql
+  
+  python:
+    build: .
+    container_name: python-server
+    ports:
+      - 8000:8000
+    volumes:
+      - ./Backend:/code
 
   frontend:
     image: nginx:latest

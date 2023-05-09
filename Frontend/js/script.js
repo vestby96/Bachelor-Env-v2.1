@@ -294,51 +294,6 @@ function draw_all_lines(remove_all = false){
   });
 };
 
-// draw line from edge of element
-function draw_line_using_angles(start, end){
-  let angle, outer_side, inner_side_start;
-  
-  outer_side = {
-    'a': Math.abs(start.y - end.y),
-    'b': Math.abs(start.x - end.x),
-  };
-  outer_side.c = Math.sqrt(outer_side.a*outer_side.a + outer_side.b*outer_side.b);
-
-  angle = {
-    'a': Math.asin(outer_side.a/outer_side.c) * (180/Math.PI),
-    'c': 90,
-  };
-  angle.b = angle.c - angle.a;
-
-  inner_side_start = {
-    'b': start.w/2,
-  };
-  inner_side_start.c = inner_side_start.b/Math.sin(angle.b * (Math.PI/180));
-  inner_side_start.a = Math.sqrt(inner_side_start.c*inner_side_start.c - inner_side_start.b*inner_side_start.b);
-
-  console.log('A=' + angle.a + ': B=' + angle.b + ': C=' + angle.c);
-  console.log('a=' + outer_side.a + ': b=' + outer_side.b + ': c=' + outer_side.c);
-  console.log('a=' + inner_side_start.a + ': b=' + inner_side_start.b + ': c=' + inner_side_start.c);
-
-  if (start.x > end.x && start.y > end.y){
-    console.log('up left');
-  } else if (start.x < end.x && start.y > end.y){
-    console.log('up right');
-  } else if (start.x > end.x && start.y < end.y){
-    console.log('down left');
-  } else if (start.x < end.x && start.y < end.y){
-    console.log('down right');
-  } else if (start.x === end.x && start.y > end.y){
-    console.log('straight up');
-  } else if (start.x === end.x && start.y < end.y){
-    console.log('straight down');
-  } else if (start.x > end.x && start.y === end.y){
-    console.log('straight left');
-  } else if (start.x < end.x && start.y === end.y){
-    console.log('straight right');
-  };
-};
-
 //---------------------- Draw Pages -----------------------
 function draw_main_page(){
     // variables
@@ -577,7 +532,9 @@ function draw_subsheet_info(stage, scale){
 
   // find the subsheet
   for (i = 0; i < process_root.process.subsheetlist.length; i++){
-    subsheet = process_root.process.subsheetlist[i] ? process_root.process.subsheetlist[i].id == stage.id : undefined;
+    if (process_root.process.subsheetlist[i].id == stage.subsheetid){
+      subsheet = process_root.process.subsheetlist[i];
+    };
   };
 
   p = $('<p>');

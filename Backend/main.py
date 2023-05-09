@@ -18,6 +18,8 @@ app = FastAPI()
 # control access origin http
 origins = [
     'http://localhost:8080', # frontend
+    'http://localhost:5500', # VSC
+    'http://127.0.0.1:5500', # VSC
 ]
 # origins can access these methods
 methods = [
