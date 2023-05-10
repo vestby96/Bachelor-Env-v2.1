@@ -7,15 +7,13 @@ import hashlib
 def hash_passwd(passwd: str) -> str:
     return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
 
-hashed_passwd = hash_passwd('gruppe-64')
-
-def pull_from_db_sens(customer_name):
+def pull_from_db_sens(customer: str, passwd: str):
     # connect to sensitive db files
     mydb = mysql.connector.connect(
         host="mysqldb-sens",
         user="root",
-        password=hashed_passwd,
-        database=customer_name
+        password=passwd,
+        database=customer,
     )
     cursor = mydb.cursor()
     # selecting all rows and columns from the xml-table
@@ -30,12 +28,12 @@ def pull_from_db_sens(customer_name):
         print('     ' + fetched[1])
     return xml_list
 
-def reset_db_filt():
+def reset_db_filt(customer: str, passwd: str):
     # mysql connection
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password=hashed_passwd,
+        password=passwd,
     )
     
     # rebuild the database
@@ -48,8 +46,8 @@ def reset_db_filt():
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password=hashed_passwd,
-        database="customer"
+        password=passwd,
+        database=customer,
     )
     
     # rebuild the table and instert the test process
@@ -59,13 +57,13 @@ def reset_db_filt():
     cursor.close()
     print('DB filt is reset')
 
-def push_to_db_filt(id: str, name: str, content: str):
+def push_to_db_filt(id: str, name: str, content: str, customer: str, passwd: str):
     # connect to filtered db files
     mydb = mysql.connector.connect(
         host="mysqldb-filt",
         user="root",
-        password=hashed_passwd,
-        database="customer"
+        password=passwd,
+        database=customer,
     )
     cursor = mydb.cursor()
     # sql string with arguments
@@ -635,15 +633,21 @@ def analyze(xml_string: str):
     return dict_root
 
 if __name__ == '__main__':
+    # customer name and password
+    passwd = hash_passwd('gruppe-64')
+    customer = 'customer'
+    
     # printing the time and date
     today = date.today()
     print("Today's date:", today)
-    reset_db_filt()
-    xml_list = pull_from_db_sens('customer')
+    reset_db_filt(customer, passwd)
+    
+    # pull all content from db sens
+    xml_list = pull_from_db_sens(customer, passwd)
     for item in xml_list:
         name = item[1]
         content = item[2]
         dict_root = analyze(content)
         id = str(dict_root['process']['id'])
         json_list = json.dumps(dict_root)
-        push_to_db_filt(id, name, json_list)
+        push_to_db_filt(id, name, json_list, customer, passwd)

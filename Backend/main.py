@@ -1,5 +1,5 @@
 # imports
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import mysql.connector
@@ -37,39 +37,9 @@ app.add_middleware(
 # api for getting all processes for given customer
 @app.get('/{customer_name}/')
 def return_process_names(customer_name: str):
-    try:
-        # input validation
-        pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
-        if re.fullmatch(pat, customer_name):
-            name_list = get_data_from_db(customer_name)
-            return JSONResponse(name_list)
-        else:
-            return JSONResponse({'Error' : 'input validation failed'})
-    except:
-        return JSONResponse({'Error' : 'return_process_names() failed'})
-
-#api for getting the full analyzed customer
-@app.get('/{customer_name}/{process_id}')
-def return_process(customer_name: str, process_id: str):
-    try:
-        patCustomer = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
-        # very specific regex for the process id
-        patProcess = re.compile('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
-        # input validation
-        if re.fullmatch(patCustomer, customer_name) is None:
-            return JSONResponse({'Error' : 'customer input validation failed'})
-        elif re.fullmatch(patProcess, process_id) is None:
-            return JSONResponse({'Error' : 'process input validation failed'})
-        else:
-            content = get_data_from_db(customer_name, process_id)
-            return JSONResponse(content)
-    except:
-        return JSONResponse({'Error' : 'return_process() failed'})
-
-
-def get_data_from_db(customer_name: str, process_id: str = ''):
-    # if the client is looking for processes connected to customer
-    if process_id == '':
+    # input validation
+    pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
+    if re.fullmatch(pat, customer_name):
         try:
             process_short_list = []
             # mysql connection
@@ -92,18 +62,30 @@ def get_data_from_db(customer_name: str, process_id: str = ''):
                 }
                 process_short_list.append(process_obj)
             # returning the variable
-            return process_short_list
+            return JSONResponse(process_short_list)
         except:
             # customer name error
-            return {'Error' : 'No customer found'}
-        
-    # else the client is looking for a specific process
+            raise HTTPException(status_code=404, detail='customer not found')
+    else:
+        raise HTTPException(status_code=403, detail='customer input invalid')
+
+#api for getting the full analyzed customer
+@app.get('/{customer_name}/{process_id}')
+def return_process(customer_name: str, process_id: str):
+    patCustomer = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
+    # very specific regex for the process id
+    patProcess = re.compile('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
+    # input validation
+    if re.fullmatch(patCustomer, customer_name) is None:
+        raise HTTPException(status_code=403, detail='customer input invalid')
+    elif re.fullmatch(patProcess, process_id) is None:
+        raise HTTPException(status_code=403, detail='process input invalid')
     else:
         try:
-            # mysql connection
+        # mysql connection
             mydb = mysql.connector.connect(
-                host="mysqldb-filt",
-                user="root",
+                host='mysqldb-filt',
+                user='root',
                 password=hashed_passwd,
                 database=customer_name,
             )
@@ -116,7 +98,7 @@ def get_data_from_db(customer_name: str, process_id: str = ''):
             # parsing the response
             content = json.loads(content[0])
             # returning the process list
-            return content
+            return JSONResponse(content)
         except:
             # process name error
-            return {'Error' : 'No process found'}
+            raise HTTPException(status_code=404, detail='process not found')

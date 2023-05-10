@@ -189,21 +189,13 @@ function convert_to_image(str, element){
   try{
     let img = $('<img>');
 
-    let split = str.split(',');
-    str = split[3];
-
-    console.log(split[0] + ', ' + split[1] + ', ' + split[2]);
-
     // denne må gjøres bedre slik at flere format fungerer
     let start = 'data:image/png;base64,';
     str = start + str;
 
-    img.attr({
-      'src' : str,
-      'width' : 100,
-      'height' : 100,
-    });
+    img.attr('src', str);
     element.append(img);
+
     return true;
   } catch {
     return false;
@@ -298,12 +290,9 @@ function draw_all_lines(remove_all = false){
 function draw_main_page(){
     // variables
     let stage_list, stage, i, choices;
-    choices = {
-      'items': new Array,
-      'ids': new Array,
-    };
-
+    choices = {'items': new Array, 'ids': new Array};
     stage_list = process_root.process.stagelist;
+
     // draw the initial path
     empty_path();
     draw_path();
@@ -338,14 +327,19 @@ function draw_main_page(){
       };
     };
 
+    // set page size
     resize_page();
+    // move items into view
     scroll_into_view();
+    // draw svg arrows
     draw_all_lines(true);
+    // draw choices, with svg arrows
     if (choices.ids.length > 0){
       for (i = 0; i < choices.ids.length; i++){
         draw_choices(choices.ids[i], choices.items[i], scale);
       };
     };
+    // initiate hover effect on all newly draw elements
     hover_effect();
 };
 
