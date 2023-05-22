@@ -54,6 +54,7 @@ def insert_to_db_sens(name: str, content: str):
     cursor.execute(sql, args)
     mydb.commit()
     
+    # print and output
     print(cursor.rowcount, "was inserted.")
     cursor.close()
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     # reset the database
     init_db_sens()
 
-    # reading the xml files and commiting it to the database
+    # reading the xml files and commiting them to the database
     f = open("/code/init_db/Test-Process-Release2815.xml", "r")
     xml_string = f.read()
     insert_to_db_sens('test process', xml_string)

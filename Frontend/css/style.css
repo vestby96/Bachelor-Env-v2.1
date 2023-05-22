@@ -7,8 +7,10 @@
     --complimentary-color-2: #E65925;
     --complimentary-color-3: #0293CE;
     --complimentary-color-4: #C2B9AE;
-    /* this color is used as shadow effect */
+
+    /* this color is used for shadow effect */
     --complimentary-color-5: #000000;
+
     --display-background: #f6f0e3;
     --display-grid: #d3d3d3;
     --font-color-dark: black;
@@ -178,6 +180,7 @@ nav #settingsToggler #icon{
     z-index: 1;
     box-shadow: 0 0 5px 0 var(--complimentary-color-5);
 }
+
 /* styles for each process item */
 .processParent{
     position: relative;
@@ -232,6 +235,7 @@ nav #settingsToggler #icon{
 .processTop .dropdownButton p:hover, .processTop .dropdownButton:focus > p{
     box-shadow: 0 0 10px 0 var(--complimentary-color-5);
 }
+
 /* process dropdowncontent */
 .dropdownContent{
     position: relative;
@@ -291,6 +295,7 @@ nav #settingsToggler #icon{
 .hiddenLeftButton p{
     transform: rotate(-90deg) rotateX(180deg) !important;
 }
+
 /* Path */
 #path{
     background-color: var(--support-color-1);
@@ -328,6 +333,7 @@ nav #settingsToggler #icon{
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
 /* Display */
 #pageLabel{
     position: absolute;
@@ -371,6 +377,7 @@ svg{
     height: 0;
     transform: translate(-50%, -50%);
 }
+
 /* Hover */
 .hover{
     position: absolute;
@@ -543,9 +550,11 @@ svg{
     cursor: default;
     transform: translate(-50%, -50%);
 }
+/* change the cursor when dragging the page */
 .dragging{
     cursor: grabbing !important;
 }
+
 [stage_type="Start"], [stage_type="End"]{
     padding: 10px;
     border-radius: 25%;

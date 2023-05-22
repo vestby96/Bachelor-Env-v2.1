@@ -18,13 +18,17 @@
     <nav>
         <div id="logo"></div>
         
+        <!-- Search button -->
         <div class="button" onkeypress="toggle_search()" onclick="toggle_search()" id="searchToggler" title="Show or hide the search field" tabindex="0">Search<p></p></div>
         
+        <!-- Settings button -->
         <div class="button" onkeypress="toggle_settings()" onclick="toggle_settings()" id="settingsToggler" title="Show or hide the settings" tabindex="0">Settings<p id="icon"></p></div>
         
+        <!-- Information button -->
         <div class="button" onkeypress="toggle_info()" onclick="toggle_info()" id="infoToggler" title="Show or hide the display legend" tabindex="0">Information<p></p></div>
     </nav>
 
+    <!-- Settings section -->
     <div id="settings">
         <div id="scale">
             <p>Scale the objects</p>
@@ -33,13 +37,17 @@
         </div>
     </div>
 
+    <!-- Processlist section -->
     <div class="wrapper" id="left">
         <div id="inputDiv" class="hidden">
+            <!-- Search input field -->
             <input type="text" id="searchInput" autocomplete="off" onkeyup="search()" placeholder="Search..." title="Search through your processes">
         </div>
     </div>
 
+    <!-- Display section -->
     <div class="wrapper" id="right">
+        <!-- Toggle process list button -->
         <div class="button" id="toggleLeftButton" onkeypress="toggle_left()" onclick="toggle_left()" title="Toggle the process list" tabindex="0"><p></p></div>
         <div id="path"></div>
         <h3 id="pageLabel" title="Current Page"></h3>
@@ -65,35 +73,44 @@
         </div>
     </div>
     
+    <!-- Information section -->
     <div id="info" class="hiddenInfo">
         <div id="wrapper" class="hiddenWrapper">
             <div id="container">
+                <!-- Detail section for "decision" -->
                 <div class="detail" id="decision">
                     <div class="summary">
+                        <!-- Icon button for toggling detail view -->
                         <div class="icon button" onkeypress="toggle_detail('decision')" onclick="toggle_detail('decision')"></div>
                         <h3>decision</h3>
                         <div class="stageImage" name="decision"></div>
                     </div>
                     <div class="description">
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin est magna, suscipit eu neque in, sagittis tempor nisl. Morbi eu nibh et purus sodales consequat et aliquet lectus. Mauris tristique dolor sit amet mi iaculis, at facilisis sem ornare. Sed eleifend faucibus elit, nec condimentum tortor tincidunt quis. Proin sed magna convallis, condimentum sem ac, volutpat ipsum. In vel eros ligula. Nam tincidunt tellus vitae leo laoreet, sit amet luctus urna tristique. Fusce consequat tristique dapibus. Etiam efficitur, odio vitae mattis vulputate, felis ligula egestas elit, ac lobortis velit ex in justo. Fusce quis laoreet risus. Vestibulum cursus blandit leo ac dignissim. Nunc ut lobortis tortor, a hendrerit tortor. Mauris convallis enim ligula, eget pharetra ligula fermentum ac. Sed tempus, mi nec gravida congue, felis est bibendum ex, gravida euismod nisl tortor at augue. Integer mauris diam, pulvinar sit amet finibus a, vulputate quis lectus. 
+                            Lorem ipsum dolor sit amet 
                         </p>
                     </div>
                 </div>
+                
+                <!-- Detail section for "anchor" -->
                 <div class="detail" id="anchor">
                     <div class="summary">
+                        <!-- Icon button for toggling detail view -->
                         <div class="icon button" onkeypress="toggle_detail('anchor')" onclick="toggle_detail('anchor')"></div>
                         <h3>anchor</h3>
                         <div class="stageImage" name="anchor"><p></p></div>
                     </div>
                     <div class="description">
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin est magna, suscipit eu neque in, sagittis tempor nisl. Morbi eu nibh et purus sodales consequat et aliquet lectus. Mauris tristique dolor sit amet mi iaculis, at facilisis sem ornare. Sed eleifend faucibus elit, nec condimentum tortor tincidunt quis. Proin sed magna convallis, condimentum sem ac, volutpat ipsum. In vel eros ligula. Nam tincidunt tellus vitae leo laoreet, sit amet luctus urna tristique. Fusce consequat tristique dapibus. Etiam efficitur, odio vitae mattis vulputate, felis ligula egestas elit, ac lobortis velit ex in justo. Fusce quis laoreet risus. Vestibulum cursus blandit leo ac dignissim. Nunc ut lobortis tortor, a hendrerit tortor. Mauris convallis enim ligula, eget pharetra ligula fermentum ac. Sed tempus, mi nec gravida congue, felis est bibendum ex, gravida euismod nisl tortor at augue. Integer mauris diam, pulvinar sit amet finibus a, vulputate quis lectus. 
+                            Lorem ipsum dolor sit amet 
                         </p>
                     </div>
                 </div>
+                
+                <!-- Detail section for "choice" -->
                 <div class="detail" id="choice">
                     <div class="summary">
+                        <!-- Icon button for toggling detail view -->
                         <div class="icon button" onkeypress="toggle_detail('choice')" onclick="toggle_detail('choice')"></div>
                         <h3>choice</h3>
                         <div class="stageImage" name="choice">
@@ -102,12 +119,15 @@
                     </div>
                     <div class="description">
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin est magna, suscipit eu neque in, sagittis tempor nisl. Morbi eu nibh et purus sodales consequat et aliquet lectus. Mauris tristique dolor sit amet mi iaculis, at facilisis sem ornare. Sed eleifend faucibus elit, nec condimentum tortor tincidunt quis. Proin sed magna convallis, condimentum sem ac, volutpat ipsum. In vel eros ligula. Nam tincidunt tellus vitae leo laoreet, sit amet luctus urna tristique. Fusce consequat tristique dapibus. Etiam efficitur, odio vitae mattis vulputate, felis ligula egestas elit, ac lobortis velit ex in justo. Fusce quis laoreet risus. Vestibulum cursus blandit leo ac dignissim. Nunc ut lobortis tortor, a hendrerit tortor. Mauris convallis enim ligula, eget pharetra ligula fermentum ac. Sed tempus, mi nec gravida congue, felis est bibendum ex, gravida euismod nisl tortor at augue. Integer mauris diam, pulvinar sit amet finibus a, vulputate quis lectus. 
+                            Lorem ipsum dolor sit amet 
                         </p>
                     </div>
                 </div>
+                
+                <!-- Detail section for "start" -->
                 <div class="detail" id="start">
                     <div class="summary">
+                        <!-- Icon button for toggling detail view -->
                         <div class="icon button" onkeypress="toggle_detail('start')" onclick="toggle_detail('start')"></div>
                         <h3>start</h3>
                         <div class="stageImage" name="start">
@@ -116,12 +136,15 @@
                     </div>
                     <div class="description">
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin est magna, suscipit eu neque in, sagittis tempor nisl. Morbi eu nibh et purus sodales consequat et aliquet lectus. Mauris tristique dolor sit amet mi iaculis, at facilisis sem ornare. Sed eleifend faucibus elit, nec condimentum tortor tincidunt quis. Proin sed magna convallis, condimentum sem ac, volutpat ipsum. In vel eros ligula. Nam tincidunt tellus vitae leo laoreet, sit amet luctus urna tristique. Fusce consequat tristique dapibus. Etiam efficitur, odio vitae mattis vulputate, felis ligula egestas elit, ac lobortis velit ex in justo. Fusce quis laoreet risus. Vestibulum cursus blandit leo ac dignissim. Nunc ut lobortis tortor, a hendrerit tortor. Mauris convallis enim ligula, eget pharetra ligula fermentum ac. Sed tempus, mi nec gravida congue, felis est bibendum ex, gravida euismod nisl tortor at augue. Integer mauris diam, pulvinar sit amet finibus a, vulputate quis lectus. 
+                            Lorem ipsum dolor sit amet 
                         </p>
                     </div>
                 </div>
+                
+                <!-- Detail section for "end" -->
                 <div class="detail" id="end">
                     <div class="summary">
+                        <!-- Icon button for toggling detail view -->
                         <div class="icon button" onkeypress="toggle_detail('end')" onclick="toggle_detail('end')"></div>
                         <h3>end</h3>
                         <div class="stageImage" name="end">
@@ -130,7 +153,7 @@
                     </div>
                     <div class="description">
                         <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin est magna, suscipit eu neque in, sagittis tempor nisl. Morbi eu nibh et purus sodales consequat et aliquet lectus. Mauris tristique dolor sit amet mi iaculis, at facilisis sem ornare. Sed eleifend faucibus elit, nec condimentum tortor tincidunt quis. Proin sed magna convallis, condimentum sem ac, volutpat ipsum. In vel eros ligula. Nam tincidunt tellus vitae leo laoreet, sit amet luctus urna tristique. Fusce consequat tristique dapibus. Etiam efficitur, odio vitae mattis vulputate, felis ligula egestas elit, ac lobortis velit ex in justo. Fusce quis laoreet risus. Vestibulum cursus blandit leo ac dignissim. Nunc ut lobortis tortor, a hendrerit tortor. Mauris convallis enim ligula, eget pharetra ligula fermentum ac. Sed tempus, mi nec gravida congue, felis est bibendum ex, gravida euismod nisl tortor at augue. Integer mauris diam, pulvinar sit amet finibus a, vulputate quis lectus. 
+                            Lorem ipsum dolor sit amet 
                         </p>
                     </div>
                 </div>

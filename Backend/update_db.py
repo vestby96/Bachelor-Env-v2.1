@@ -5,6 +5,7 @@ from datetime import date
 import hashlib
 
 def hash_passwd(passwd: str) -> str:
+    # hashing th einput string using the sha256 algorithm
     return hashlib.sha256(passwd.encode('UTF-8')).hexdigest()
 
 def pull_from_db_sens(customer: str, passwd: str):
@@ -66,11 +67,13 @@ def push_to_db_filt(id: str, name: str, content: str, customer: str, passwd: str
         database=customer,
     )
     cursor = mydb.cursor()
+    
     # sql string with arguments
     sql = "INSERT INTO xml (processId, name, content) VALUES (%s, %s, %s)"
     name = name.lower()
     args = (id, name, content)
     cursor.execute(sql, args)
+    
     # commit the commands
     mydb.commit()
     cursor.close()
@@ -86,6 +89,7 @@ def analyze(xml_string: str):
         'proc': 'http://www.blueprism.co.uk/product/process',
     }
     
+    # dict to store the desired data
     dict_root = {}
     dict_root['info'] = {
         'name' : file_root.find('bpr:name', ns).text if file_root.find('bpr:name', ns) is not None else None,
@@ -105,6 +109,7 @@ def analyze(xml_string: str):
             'name' : proc.get('name'),
             'xmlns' : proc.get('xmlns'),
         }
+        # inner process
         inner_proc = proc.find('.//proc:process', ns)
         if inner_proc is not None:
             dict_root['process']['version'] = inner_proc.get('version')
@@ -136,6 +141,7 @@ def analyze(xml_string: str):
 
         # subsheets
         for subsheet in proc.findall('.//proc:subsheet', ns):
+            # dict to store the desired data
             sub_dict = {
                 'id' : subsheet.get('subsheetid'),
                 'type' : subsheet.get('type'),
@@ -156,7 +162,9 @@ def analyze(xml_string: str):
             
             dict_root['process']['subsheetlist'].append(sub_dict)
         
+        # loop through stages
         for stage in proc.findall('.//proc:stage', ns):
+            # dict to store the desired data
             stage_dict = {
                 'id' : stage.get('stageid'),
                 'name' : stage.get('name'),
@@ -306,6 +314,7 @@ def analyze(xml_string: str):
             if element is not None:
                 stage_dict['initialvalue'] = []
                 rows = element.findall('.//proc:row', ns)
+                # using enumerate to loop through the rows and fields of initialvalue
                 for i, row in enumerate(rows):
                     stage_dict['initialvalue'].append([])
                     fields = row.findall('.//proc:field', ns)
@@ -326,6 +335,7 @@ def analyze(xml_string: str):
                                 'type' : field.get('type'),
                                 'value' : field.get('value'),
                             }
+                        # use the enumerated integer i to place the dict in the correct list
                         stage_dict['initialvalue'][i].append(field_dict)
             
             # resource
@@ -361,12 +371,14 @@ def analyze(xml_string: str):
                     }
                     stage_dict['choices'].append(choice_dict)
             
+            # store the stage dict in the stagelist
             dict_root['process']['stagelist'].append(stage_dict)
     
     # outer object
     obj = file_root.find('.//proc:object', ns)
     
     if obj is not None:
+        # inner process
         inner_proc = obj.find('.//proc:process', ns)
         dict_root['object'] = {
             'id' : obj.get('id'),
@@ -423,7 +435,9 @@ def analyze(xml_string: str):
             
             dict_root['object']['subsheetlist'].append(sub_dict)
         
+        # loop through all stages
         for stage in obj.findall('.//proc:stage', ns):
+            # dict to store the desired data
             stage_dict = {
                 'id' : stage.get('stageid'),
                 'name' : stage.get('name'),
@@ -573,6 +587,7 @@ def analyze(xml_string: str):
             if element is not None:
                 stage_dict['initialvalue'] = []
                 rows = element.findall('.//proc:row', ns)
+                # using enumerate to loop through the rows and fields of initialvalue
                 for i, row in enumerate(rows):
                     stage_dict['initialvalue'].append([])
                     fields = row.findall('.//proc:field', ns)
@@ -593,6 +608,7 @@ def analyze(xml_string: str):
                                 'type' : field.get('type'),
                                 'value' : field.get('value'),
                             }
+                        # use the enumerated integer i to place the dict in the correct list
                         stage_dict['initialvalue'][i].append(field_dict)
             
             # resource
@@ -630,6 +646,7 @@ def analyze(xml_string: str):
             
             dict_root['object']['stagelist'].append(stage_dict)
     
+    # dict where all the desired data is stored
     return dict_root
 
 if __name__ == '__main__':
@@ -644,10 +661,15 @@ if __name__ == '__main__':
     
     # pull all content from db sens
     xml_list = pull_from_db_sens(customer, passwd)
+    
+    # loop through the list from db sens
     for item in xml_list:
         name = item[1]
         content = item[2]
+        # analyze the xml-string
         dict_root = analyze(content)
         id = str(dict_root['process']['id'])
+        # jsonify
         json_list = json.dumps(dict_root)
+        # insert new row in db filt
         push_to_db_filt(id, name, json_list, customer, passwd)

@@ -1,13 +1,18 @@
 from fastapi.testclient import TestClient
 from main import app
 
+# Create a TestClient instance by passing the FastAPI application
 client = TestClient(app)
 
 # 1
 def test_customer():
+    # Send a GET request to '/customer/' with a custom header
     response = client.get('/customer/', headers={'X-token': 'coneofsilence'})
+    # Assert that the response status code is 200
     assert response.status_code == 200, f'Expected status code: 200, but got {response.status_code}'
+    # Assert that the response JSON data is of type list
     assert type(response.json()) == list, f'Expected type: list, but got {type(response.json())}'
+
 # 2
 def test_customer_not_found():
     response = client.get("/empty/", headers={"X-Token": "coneofsilence"})
