@@ -1,6 +1,10 @@
-To start the application
+Prerequisites:
+- Docker
+- Docker compose plugin
+
+Start the application:
 - Start the docker compose through the commandline.
-    - $docker-compose up --build -d
+    - $docker compose up --build -d
 - After startup the databases need to be initialized
 - In the container called python-server, run the following commands
     - $python /code/init_db/init_db_sens.py
@@ -9,5 +13,6 @@ To start the application
 - To add data to db_filt, the analyzer has to be ran
     - $python /code/update_db.py
 
-Now the app is running with the example XML-files, we created during development
-frontend on port 8080, and backend on port 8000
+The app is now running with the example XML-files, we created during development
+Access the frontend: localhost:8080
+Access the backend: localhost:8000

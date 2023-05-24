@@ -37,9 +37,12 @@ app.add_middleware(
 # api for getting all processes for given customer
 @app.get('/{customer_name}/')
 def return_process_names(customer_name: str):
-    # input validation
+    # customer name pattern
     pat = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
-    if re.fullmatch(pat, customer_name):
+    # input validation
+    if re.fullmatch(pat, customer_name) is None:
+        raise HTTPException(status_code=403, detail='customer input invalid')
+    else:
         try:
             process_short_list = []
             # mysql connection
@@ -64,16 +67,15 @@ def return_process_names(customer_name: str):
             # returning the variable
             return JSONResponse(process_short_list)
         except:
-            # customer name error
+            # customer not found
             raise HTTPException(status_code=404, detail='customer not found')
-    else:
-        raise HTTPException(status_code=403, detail='customer input invalid')
 
 #api for getting the full analyzed customer
 @app.get('/{customer_name}/{process_id}')
 def return_process(customer_name: str, process_id: str):
+    # customer name pattern
     patCustomer = re.compile('^[a-zæøåA-ZÆØÅ0-9-_]{1,50}$')
-    # very specific regex for the process id
+    # process id pattern
     patProcess = re.compile('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
     # input validation
     if re.fullmatch(patCustomer, customer_name) is None:
@@ -100,5 +102,5 @@ def return_process(customer_name: str, process_id: str):
             # returning the process list
             return JSONResponse(content)
         except:
-            # process name error
+            # process not found
             raise HTTPException(status_code=404, detail='process not found')
